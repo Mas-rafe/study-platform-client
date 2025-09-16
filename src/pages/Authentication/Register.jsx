@@ -1,13 +1,11 @@
-
-
-import {  useState } from "react";
-
+import { useState } from "react";
 import Swal from "sweetalert2";
 import UseAuth from "../../Hooks/UseAuth";
-import {  Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-
+import axios from "axios";
+import SocialLogin from "./SocialLogin";
 
 const Register = () => {
   const { createUser, updateUserProfile } = UseAuth();
@@ -15,19 +13,33 @@ const Register = () => {
   const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    createUser(data.email, data.password)
-      .then(() => {
-        updateUserProfile({
-          displayName: data.name,
-          photoURL: data.photo,
-        });
-        Swal.fire("Success!", "Account created successfully", "success");
-        navigate("/");
-      })
-      .catch((err) => {
-        Swal.fire("Error", err.message, "error");
+  const onSubmit = async (data) => {
+    try {
+      const result = await createUser(data.email, data.password);
+
+      await updateUserProfile({
+        displayName: data.name,
+        photoURL: data.photo,
       });
+
+      // ✅ Save user to DB
+      await axios.post("http://localhost:5000/users", {
+        name: data.name,
+        email: data.email,
+        photo: data.photo,
+      });
+
+      // ✅ Get JWT token
+      const res = await axios.post("http://localhost:5000/jwt", {
+        email: data.email,
+      });
+      localStorage.setItem("access-token", res.data.token);
+
+      Swal.fire("Success!", "Account created successfully", "success");
+      navigate("/");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
   };
 
   return (
@@ -88,10 +100,8 @@ const Register = () => {
           </div>
 
           <button className="btn btn-primary w-full">Register</button>
-
           {/* Social login component */}
-          {/* <SocialLogin /> */}
-
+          <SocialLogin />
           <p className="text-center">
             Already have an account?{" "}
             <Link to="/login" className="link link-primary">

@@ -1,29 +1,33 @@
-
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
-
 import Swal from "sweetalert2";
 import UseAuth from "../../Hooks/UseAuth";
-import { Link,  useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-
+import SocialLogin from "./SocialLogin";
+import axios from "axios";
 
 const Login = () => {
   const { signIn } = UseAuth();
   const { register, handleSubmit } = useForm();
   const [showPass, setShowPass] = useState(false);
-  const navigate = useNavigate ();
+  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    signIn(data.email, data.password)
-      .then(() => {
-        Swal.fire("Success!", "Logged in successfully", "success");
-        navigate("/");
-      })
-      .catch((err) => {
-        Swal.fire("Error", err.message, "error");
+  const onSubmit = async (data) => {
+    try {
+      await signIn(data.email, data.password);
+
+      // ✅ Get JWT token
+      const res = await axios.post("http://localhost:5000/jwt", {
+        email: data.email,
       });
+      localStorage.setItem("access-token", res.data.token);
+
+      Swal.fire("Success!", "Logged in successfully", "success");
+      navigate("/");
+    } catch (err) {
+      Swal.fire("Error", err.message, "error");
+    }
   };
 
   return (
@@ -65,7 +69,7 @@ const Login = () => {
           <button className="btn btn-primary w-full">Login</button>
 
           {/* Social login component */}
-          {/* <SocialLogin /> */}
+          <SocialLogin />
 
           <p className="text-center">
             Don’t have an account?{" "}

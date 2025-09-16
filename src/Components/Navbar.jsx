@@ -1,13 +1,10 @@
-// src/components/Navbar/Navbar.jsx
-
-
 import Swal from "sweetalert2";
 
-import { Link, Links, NavLink } from "react-router";
 import { useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
+import { Link, NavLink } from "react-router";
 
-const Navbar = () => {
+const Navbar = ({ onDashboardClick }) => {
   const { user, logOut } = useContext(AuthContext);
 
   const handleLogOut = async () => {
@@ -38,12 +35,15 @@ const Navbar = () => {
       <li><NavLink to="/" className={linkClass}>Home</NavLink></li>
       <li><NavLink to="/sessions" className={linkClass}>Study Sessions</NavLink></li>
       <li><NavLink to="/tutors" className={linkClass}>Tutors</NavLink></li>
-      {/* Optional public route */}
-      {/* <li><NavLink to="/announcements" className={linkClass}>Announcements</NavLink></li> */}
       <li><NavLink to="/about" className={linkClass}>About</NavLink></li>
       {user && (
-        <li><NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink></li>
+        <li>
+          <Link to="/dashboard" className="hover:text-primary/80">
+            Dashboard
+          </Link>
+        </li>
       )}
+
     </>
   );
 
@@ -54,8 +54,7 @@ const Navbar = () => {
         {/* Mobile menu */}
         <div className="dropdown lg:hidden">
           <label tabIndex={0} className="btn btn-ghost" aria-label="Open menu">
-            <svg
-              xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
               viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                 d="M4 6h16M4 12h16M4 18h16" />
@@ -79,10 +78,8 @@ const Navbar = () => {
           </ul>
         </div>
 
-        {/* Logo + brand */}
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-        
-          {/* <StudyLogo /> */}
           <span className="text-lg md:text-2xl font-bold">StudyHub</span>
         </Link>
       </div>
@@ -95,32 +92,30 @@ const Navbar = () => {
       {/* END */}
       <div className="navbar-end gap-2">
         {user ? (
-          <>
-            {/* Avatar dropdown */}
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-9 rounded-full">
-                  <img
-                    alt="profile"
-                    src={
-                      user.photoURL ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        user.displayName || user.email || "U"
-                      )}`
-                    }
-                  />
-                </div>
+          <div className="dropdown dropdown-end">
+            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+              <div className="w-9 rounded-full">
+                <img
+                  alt="profile"
+                  src={
+                    user.photoURL ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      user.displayName || user.email || "U"
+                    )}`
+                  }
+                />
               </div>
-              <ul
-                tabIndex={0}
-                className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-56 z-[60]"
-              >
-                <li className="px-2 py-1 text-xs opacity-70">{user.email}</li>
-                <li><NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink></li>
-                <li><button onClick={handleLogOut} className="text-error">Log out</button></li>
-              </ul>
             </div>
-          </>
+            <ul
+              tabIndex={0}
+              className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-56 z-[60]"
+            >
+              <li className="px-2 py-1 text-xs opacity-70">{user.email}</li>
+              {/* 🔹 dashboard button inside avatar dropdown */}
+              <li><button onClick={onDashboardClick}>Dashboard</button></li>
+              <li><button onClick={handleLogOut} className="text-error">Log out</button></li>
+            </ul>
+          </div>
         ) : (
           <>
             <Link to="/login" className="btn btn-primary">Login</Link>

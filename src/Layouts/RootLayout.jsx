@@ -1,18 +1,24 @@
 
-import { Outlet } from "react-router";
 
-import Footer from "../Components/Footer";
+
+
+
+import { Outlet } from "react-router";
+import { useState } from "react";
 import Navbar from "../Components/Navbar";
 
-
 const RootLayout = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <div className="flex-grow">
-        <Outlet />
-      </div>
-      <Footer />
+    <div>
+      <Navbar onDashboardClick={() => setIsDrawerOpen(true)} />
+      {/* <DashboardDrawer
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      /> */}
+      <Outlet />
+      {/* <Footer /> */}
     </div>
   );
 };

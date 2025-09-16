@@ -1,7 +1,9 @@
 
 import { useLocation, useNavigate } from 'react-router';
-import UseAuth from '../../../Hooks/UseAuth';
-import UseAxios from '../../../Hooks/UseAxios';
+
+
+import UseAuth from '../../Hooks/UseAuth';
+import UseAxios from '../../Hooks/UseAxios';
 
 const SocialLogin = () => {
     const {signInWithGoogle} = UseAuth();
@@ -11,31 +13,31 @@ const SocialLogin = () => {
     const axiosInstance = UseAxios();
 
 
-    // const handleGoogleSignIn = () =>{
-    //     signInWithGoogle()
-    //     .then( async (result) =>{
+    const handleGoogleSignIn = () =>{
+        signInWithGoogle()
+        .then( async (result) =>{
             
-    //         const user = result.user;
-    //         console.log(result.user);
+            const user = result.user;
+            console.log(result.user);
 
-    //          //update userinfo in the database
-    //             const userinfo = {
-    //                 email: user.email,
-    //                 role: 'user',//default role
-    //                 created_at: new Date().toISOString(),
-    //                 last_log_in: new Date().toISOString()
-    //             }
+             //update userinfo in the database
+                const userinfo = {
+                    email: user.email,
+                    role: 'user',//default role
+                    created_at: new Date().toISOString(),
+                    last_log_in: new Date().toISOString()
+                }
 
-    //             const res = await axiosInstance.post('/users',userinfo);
-    //             console.log('user update info',res.data);
+                const res = await axiosInstance.post('/users',userinfo);
+                console.log('user update info',res.data);
                 
-    //         navigate(from);
-    //     })
-    //     .catch(error =>{
-    //         console.log(error);
+            navigate(from);
+        })
+        .catch(error =>{
+            console.log(error);
             
-    //     })
-    // }
+        })
+    }
     return (
         <div className='text-center '>
             <p className='mb-4'>or</p>
