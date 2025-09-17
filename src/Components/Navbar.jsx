@@ -33,7 +33,7 @@ const Navbar = ({ onDashboardClick }) => {
   const navItems = (
     <>
       <li><NavLink to="/" className={linkClass}>Home</NavLink></li>
-      <li><NavLink to="/sessions" className={linkClass}>Study Sessions</NavLink></li>
+      <li><NavLink to="/study-sessions" className={linkClass}>Study Sessions</NavLink></li>
       <li><NavLink to="/tutors" className={linkClass}>Tutors</NavLink></li>
       <li><NavLink to="/about" className={linkClass}>About</NavLink></li>
       {user && (
