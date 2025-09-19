@@ -12,11 +12,12 @@ import AdminDashboard from "../pages/Dashboard/AdminDashboard/AdminDashboard";
 import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";
 import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboard";
+import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
 
 const router = createBrowserRouter([
- {
+  {
     path: "/",
-    Component: RootLayout, 
+    Component: RootLayout,
     children: [
       { index: true, Component: Home },
       { path: "login", Component: Login },
@@ -39,9 +40,18 @@ const router = createBrowserRouter([
           // { path: "my-materials", Component: MyMaterials },
 
           // Admin
-          { path: "admin", Component: AdminDashboard },
-          { path: "manage-sessions", Component: ManageSessions },
-          // { path: "manage-users", Component: ManageUsers },
+          {
+            path: "admin",
+            Component: AdminDashboard
+          },
+          {
+            path: "manage-sessions",
+            Component: ManageSessions
+          },
+          {
+            path: "manage-users",
+            Component: ManageUsers
+          },
           // { path: "manage-reviews", Component: ManageReviews },
           // { path: "manage-materials", Component: ManageMaterials },
         ],
