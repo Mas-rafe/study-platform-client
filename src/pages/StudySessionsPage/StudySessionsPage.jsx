@@ -2,17 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../Hooks/UseAxiosSecure";
 import { Card, CardContent } from "../../Components/UI/card";
 import { Button } from "../../Components/UI/button";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import Swal from "sweetalert2";
+import UseAuth from "../../Hooks/UseAuth";
 
 const StudySessionsPage = () => {
   const axiosSecure = useAxiosSecure();
+  const { role } = UseAuth(); // get current role (student/tutor/admin)
+
+  //  if not student, redirect to dashboard
+  if (role !== "student") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
 
   // fetch only approved sessions
   const { data: sessions = [], isLoading, isError } = useQuery({
     queryKey: ["approvedSessions"],
     queryFn: async () => {
-      const res = await axiosSecure.get("/sessions?status=approved"); 
+      const res = await axiosSecure.get("/sessions?status=approved");
       return res.data;
     },
   });
@@ -47,11 +55,10 @@ const StudySessionsPage = () => {
                   <h3 className="text-xl font-semibold mb-2">{session.title}</h3>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-3">{session.description}</p>
                   <span
-                    className={`px-3 py-1 text-xs font-bold rounded-full ${
-                      getStatus(session.registrationEnd) === "Ongoing"
+                    className={`px-3 py-1 text-xs font-bold rounded-full ${getStatus(session.registrationEnd) === "Ongoing"
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
-                    }`}
+                      }`}
                   >
                     {getStatus(session.registrationEnd)}
                   </span>
