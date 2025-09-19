@@ -58,7 +58,7 @@ const DashboardLayout = () => {
                 <Link to="/dashboard/admin">Admin Dashboard</Link>
               </li>
               <li>
-                <Link to="/dashboard/manage-sessions">Manage Sessions</Link>
+                <Link to="/dashboard/admin/manage-sessions">Manage Sessions</Link>
               </li>
             </>
           )}

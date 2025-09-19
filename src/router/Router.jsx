@@ -7,6 +7,8 @@ import DashboardLayout from "../Layouts/DashboardLayout";
 import StudentDashboard from "../pages/Dashboard/StudentDashboard";
 import StudySessionsForm from "../pages/Dashboard/StudySessionsForm/StudySessionsForm";
 import StudySessionsPage from "../pages/StudySessionsPage/StudySessionsPage";
+import AdminDashboard from "../pages/Dashboard/AdminDashboard/AdminDashboard";
+import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 
 
 export const router = createBrowserRouter([
@@ -42,10 +44,16 @@ export const router = createBrowserRouter([
           //   path: "teacher",
           //   Component: TeacherDashboard,
           // },
-          // {
-          //   path: "admin",
-          //   Component: AdminDashboard,
-          // },
+          {
+            path: "admin",
+            Component: AdminDashboard,
+          },
+{
+            path: "admin/manage-sessions",
+            Component: ManageSessions,
+          },
+
+
           {
             path: "study-sessions",   // 👉 Tutor tool = form to create sessions
             Component: StudySessionsForm,

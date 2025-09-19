@@ -1,31 +1,34 @@
-// src/Pages/StudySessions/StudySessionsPage.jsx
-import { useEffect, useState } from "react";
-
-import axios from "axios";
-import { Card, CardContent } from "../../components/ui/card";
-
-import Swal from "sweetalert2";
-import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import useAxiosSecure from "../../Hooks/UseAxiosSecure";
+import { Card, CardContent } from "../../Components/UI/card";
 import { Button } from "../../Components/UI/button";
+import { Link } from "react-router";
+import Swal from "sweetalert2";
 
 const StudySessionsPage = () => {
-  const [sessions, setSessions] = useState([]);
+  const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    axios
-      .get("https://your-server-url/studySessions?status=approved")
-      .then((res) => {
-        setSessions(res.data);
-      })
-      .catch(() => {
-        Swal.fire("Error!", "Failed to load study sessions", "error");
-      });
-  }, []);
+  // fetch only approved sessions
+  const { data: sessions = [], isLoading, isError } = useQuery({
+    queryKey: ["approvedSessions"],
+    queryFn: async () => {
+      const res = await axiosSecure.get("/sessions?status=approved"); 
+      return res.data;
+    },
+  });
 
-  // helper function to check session status
+  // show error toast if fetch fails
+  if (isError) {
+    Swal.fire("Error!", "Failed to load study sessions", "error");
+  }
+
   const getStatus = (endDate) => {
     return new Date(endDate) < new Date() ? "Closed" : "Ongoing";
   };
+
+  if (isLoading) {
+    return <p className="text-center mt-10">Loading sessions...</p>;
+  }
 
   return (
     <div className="p-6">
@@ -42,9 +45,7 @@ const StudySessionsPage = () => {
               <CardContent className="p-6 flex flex-col justify-between h-full">
                 <div>
                   <h3 className="text-xl font-semibold mb-2">{session.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-                    {session.description}
-                  </p>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-3">{session.description}</p>
                   <span
                     className={`px-3 py-1 text-xs font-bold rounded-full ${
                       getStatus(session.registrationEnd) === "Ongoing"
