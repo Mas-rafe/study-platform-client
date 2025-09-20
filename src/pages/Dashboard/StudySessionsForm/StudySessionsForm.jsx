@@ -8,32 +8,40 @@ const StudySessionsForm = () => {
   const axiosSecure = useAxiosSecure();
   const { user } = UseAuth();
 
-  const onSubmit = async (data) => {
-    try {
-      const sessionData = {
-        ...data,
-        tutorName: user?.displayName,
-        tutorEmail: user?.email,
-        createdAt: new Date(),
-      };
+ const onSubmit = async (data) => {
+  try {
+    const classStart = new Date(`${data.classStart}T${data.classStartTime}`);
+    const classEnd = new Date(data.classEnd); // add classEndTime if needed
 
-      const res = await axiosSecure.post("/sessions", sessionData);
-      if (res.data.insertedId) {
-        Swal.fire({
-          icon: "success",
-          title: "Session Created!",
-          text: "Your study session is now live.",
-        });
-        reset();
-      }
-    } catch (err) {
+    const sessionData = {
+      ...data,
+      duration: Number(data.duration),
+      registrationFee: Number(data.registrationFee),
+      classStart,
+      classEnd,
+      tutorName: user?.displayName,
+      tutorEmail: user?.email,
+      createdAt: new Date(),
+    };
+
+    const res = await axiosSecure.post("/sessions", sessionData);
+    if (res.data.insertedId) {
       Swal.fire({
-        icon: "error",
-        title: "Failed to create session",
-        text: err.message,
+        icon: "success",
+        title: "Session Created!",
+        text: "Your study session is now live.",
       });
+      reset();
     }
-  };
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Failed to create session",
+      text: err.message,
+    });
+  }
+};
+
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-base-200 rounded-lg shadow">
