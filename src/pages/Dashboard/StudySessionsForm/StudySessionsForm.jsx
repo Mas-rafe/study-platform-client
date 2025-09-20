@@ -1,14 +1,11 @@
-
 import Swal from "sweetalert2";
-
-
 import { useForm } from "react-hook-form";
 import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
 
 const StudySessionsForm = () => {
   const { register, handleSubmit, reset } = useForm();
-  const axiosSecure = useAxiosSecure()
+  const axiosSecure = useAxiosSecure();
   const { user } = UseAuth();
 
   const onSubmit = async (data) => {
@@ -40,17 +37,114 @@ const StudySessionsForm = () => {
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-base-200 rounded-lg shadow">
-      <h2 className="text-2xl font-bold mb-4">Create Study Session</h2>
+      <h2 className="text-2xl font-bold mb-6">Create Study Session</h2>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <input {...register("title", { required: true })} placeholder="Session Title" className="input input-bordered w-full" />
-        <input {...register("subject", { required: true })} placeholder="Subject" className="input input-bordered w-full" />
-        <textarea {...register("description")} placeholder="Description" className="textarea textarea-bordered w-full" />
-        <input type="date" {...register("date", { required: true })} className="input input-bordered w-full" />
-        <input type="time" {...register("time", { required: true })} className="input input-bordered w-full" />
-        <input type="number" {...register("duration", { required: true })} placeholder="Duration (hours)" className="input input-bordered w-full" />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic Info */}
+        <div>
+          <label className="label font-semibold">Session Title</label>
+          <input
+            {...register("title", { required: true })}
+            placeholder="Enter session title"
+            className="input input-bordered w-full"
+          />
+        </div>
 
-        <button type="submit" className="btn btn-primary w-full">Create Session</button>
+        <div>
+          <label className="label font-semibold">Subject</label>
+          <input
+            {...register("subject", { required: true })}
+            placeholder="Enter subject"
+            className="input input-bordered w-full"
+          />
+        </div>
+
+        <div>
+          <label className="label font-semibold">Description</label>
+          <textarea
+            {...register("description")}
+            placeholder="Describe the session content"
+            className="textarea textarea-bordered w-full"
+          />
+        </div>
+
+        {/* Schedule */}
+        <div>
+          <h3 className="font-semibold mb-2">Schedule</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Registration Start Date</label>
+              <input
+                type="date"
+                {...register("registrationStart", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div>
+              <label className="label">Registration End Date</label>
+              <input
+                type="date"
+                {...register("registrationEnd", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div>
+              <label className="label">Class Start Date</label>
+              <input
+                type="date"
+                {...register("classStart", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div>
+              <label className="label">Class Start Time</label>
+              <input
+                type="time"
+                {...register("classStartTime", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+
+            <div>
+              <label className="label">Class End Date</label>
+              <input
+                type="date"
+                {...register("classEnd", { required: true })}
+                className="input input-bordered w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Duration & Fee */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="label">Duration (hours)</label>
+            <input
+              type="number"
+              {...register("duration", { required: true, min: 1 })}
+              placeholder="e.g. 2"
+              className="input input-bordered w-full"
+            />
+          </div>
+
+          <div>
+            <label className="label">Registration Fee ($)</label>
+            <input
+              type="number"
+              {...register("registrationFee", { required: true, min: 0 })}
+              placeholder="0 = Free"
+              className="input input-bordered w-full"
+            />
+          </div>
+        </div>
+
+        <button type="submit" className="btn btn-primary w-full mt-4">
+          Create Session
+        </button>
       </form>
     </div>
   );

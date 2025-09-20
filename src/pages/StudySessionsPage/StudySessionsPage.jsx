@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../Hooks/UseAxiosSecure";
 import { Card, CardContent } from "../../Components/UI/card";
 import { Button } from "../../Components/UI/button";
-import { Link, Navigate } from "react-router";
+import { Link, Navigate, Outlet,  } from "react-router";
 import Swal from "sweetalert2";
 import UseAuth from "../../Hooks/UseAuth";
 
@@ -65,7 +65,7 @@ const StudySessionsPage = () => {
                 </div>
 
                 <div className="mt-4">
-                  <Link to={`/study-sessions/${session._id}`}>
+                  <Link to={`/session-details/${session._id}`}>
                     <Button className="w-full">Read More</Button>
                   </Link>
                 </div>
@@ -74,6 +74,7 @@ const StudySessionsPage = () => {
           ))}
         </div>
       )}
+     
     </div>
   );
 };

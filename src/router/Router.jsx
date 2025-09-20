@@ -13,6 +13,8 @@ import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";
 import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboard";
 import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
+import StudySessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
+import SessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
 
 const router = createBrowserRouter([
   {
@@ -22,7 +24,15 @@ const router = createBrowserRouter([
       { index: true, Component: Home },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
-      { path: "study-sessions", Component: StudySessionsPage },
+      {
+        path: "study-sessions",
+        Component: StudySessionsPage,
+      },
+      {
+
+        path: "session-details/:id",
+        Component: SessionDetails
+      },
       {
         path: "dashboard",
         Component: DashboardLayout,

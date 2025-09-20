@@ -44,32 +44,44 @@ const AuthProvider = ({ children }) => {
   };
 
   // 🔹 Listen for auth changes
-  useEffect(() => {
-    const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+useEffect(() => {
+  const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setUser(currentUser);
 
-      if (currentUser?.email) {
-        try {
-          // fetch role from backend
-          const res = await axios.get(
-            `http://localhost:5000/users/${currentUser.email}`
-          );
-          setRole(res.data?.role || "student");
-        } catch (err) {
-          console.error("Failed to fetch user role:", err);
-          setRole("student");
+    if (currentUser?.email) {
+      try {
+        // 1️⃣ Get role
+        const res = await axios.get(
+          `http://localhost:5000/users/${currentUser.email}`
+        );
+        setRole(res.data?.role || "student");
+
+        // 2️⃣ Request JWT from backend
+        const jwtRes = await axios.post("http://localhost:5000/jwt", {
+          email: currentUser.email,
+        });
+
+        if (jwtRes.data?.token) {
+          localStorage.setItem("access-token", jwtRes.data.token);
         }
-      } else {
+      } catch (err) {
+        console.error("AuthProvider error:", err);
         setRole("student");
+        localStorage.removeItem("access-token"); // clear old token
       }
+    } else {
+      setRole("student");
+      localStorage.removeItem("access-token");
+    }
 
-      setLoading(false);
-    });
+    setLoading(false);
+  });
 
-    return () => {
-      unSubscribe();
-    };
-  }, []);
+  return () => {
+    unSubscribe();
+  };
+}, []);
+
 
   const authInfo = {
     user,
