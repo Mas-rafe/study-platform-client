@@ -13,8 +13,9 @@ import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";
 import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboard";
 import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
-import StudySessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
+
 import SessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
+import AdminRoute from "../pages/Dashboard/AdminDashboard/AdminRoute/AdminRoute";
 
 const router = createBrowserRouter([
   {
@@ -52,15 +53,21 @@ const router = createBrowserRouter([
           // Admin
           {
             path: "admin",
-            Component: AdminDashboard
+            element: (<AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>)
           },
           {
             path: "manage-sessions",
-            Component: ManageSessions
+           element: ( <AdminRoute>
+            <ManageSessions />
+           </AdminRoute> )
           },
           {
             path: "manage-users",
-            Component: ManageUsers
+            element: ( <AdminRoute>
+              <ManageUsers />
+            </AdminRoute> )
           },
           // { path: "manage-reviews", Component: ManageReviews },
           // { path: "manage-materials", Component: ManageMaterials },
