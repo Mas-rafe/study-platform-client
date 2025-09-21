@@ -1,10 +1,17 @@
-import React, {  use } from 'react';
-import { AuthContext } from '../Contexts/AuthContext';
+
+import { useContext } from "react";
+import { AuthContext } from "../Contexts/AuthContext";
 
 
 const UseAuth = () => {
-    const authInfo = use(AuthContext);
-    return authInfo;
+  const { user, role, loading } = useContext(AuthContext);
+
+  return {
+    user,
+    role,
+    loading,
+    email: user?.email || null,   // ✅ ensure email is included
+  };
 };
 
 export default UseAuth;
