@@ -11,7 +11,7 @@ import StudySessionsForm from "../pages/Dashboard/StudySessionsForm/StudySession
 import AdminDashboard from "../pages/Dashboard/AdminDashboard/AdminDashboard";
 import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";
-import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboard";
+import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboardHome";
 import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
 
 import SessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
@@ -25,6 +25,7 @@ import MySessions from "../pages/Dashboard/TutorDashboard/TutorSessions/MySessio
 import AddMaterial from "../pages/Dashboard/TutorDashboard/AddMaterial/AddMaterial";
 import MyUploadedMaterials from "../pages/Dashboard/TutorDashboard/MyUploadedMaterial/MyUploadedMaterial";
 import TutorDashboardHome from "../pages/Dashboard/TutorDashboard/TutorHome/TutorDashboardHome";
+import StudentDashboardHome from "../pages/Dashboard/StudentDasboard/StudentDasboardHome";
 
 const router = createBrowserRouter([
   {
@@ -48,7 +49,8 @@ const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
           // Student
-          { path: "student", Component: StudentDashboard },
+          { path: "student", 
+            Component: StudentDashboardHome },
           { path: "my-bookings", Component: StudentDashboard }, // replace with MyBookings
           { path: "my-reviews", Component: StudentDashboard }, // replace with MyReviews
           { path: "my-materials",
