@@ -8,39 +8,47 @@ const StudySessionsForm = () => {
   const axiosSecure = useAxiosSecure();
   const { user } = UseAuth();
 
- const onSubmit = async (data) => {
-  try {
-    const classStart = new Date(`${data.classStart}T${data.classStartTime}`);
-    const classEnd = new Date(data.classEnd); // add classEndTime if needed
+  const onSubmit = async (data) => {
+    try {
+      const registrationStart = new Date(data.registrationStart);
+      const registrationEnd = new Date(data.registrationEnd);
+      const classStart = new Date(`${data.classStart}T${data.classStartTime}`);
+      const classEnd = new Date(data.classEnd);
 
-    const sessionData = {
-      ...data,
-      duration: Number(data.duration),
-      registrationFee: Number(data.registrationFee),
-      classStart,
-      classEnd,
-      tutorName: user?.displayName,
-      tutorEmail: user?.email,
-      createdAt: new Date(),
-    };
+      const sessionData = {
+        title: data.title,
+        subject: data.subject,
+        description: data.description,
+        registrationStart,
+        registrationEnd,
+        classStart,
+        classEnd,
+        duration: Number(data.duration),
+        registrationFee: Number(data.registrationFee) || 0,
+        tutorName: user?.displayName,
+        tutorEmail: user?.email,
+        status: "pending", // default
+        createdAt: new Date(),
+      };
 
-    const res = await axiosSecure.post("/sessions", sessionData);
-    if (res.data.insertedId) {
+      const res = await axiosSecure.post("/sessions", sessionData);
+      if (res.data.insertedId) {
+        Swal.fire({
+          icon: "success",
+          title: "Session Created!",
+          text: "Your study session is now live.",
+        });
+        reset();
+      }
+    } catch (err) {
       Swal.fire({
-        icon: "success",
-        title: "Session Created!",
-        text: "Your study session is now live.",
+        icon: "error",
+        title: "Failed to create session",
+        text: err.message,
       });
-      reset();
     }
-  } catch (err) {
-    Swal.fire({
-      icon: "error",
-      title: "Failed to create session",
-      text: err.message,
-    });
-  }
-};
+  };
+
 
 
   return (

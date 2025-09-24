@@ -33,7 +33,7 @@ const DashboardLayout = () => {
               <li><Link to="/dashboard/student">Student Dashboard</Link></li>
               <li><Link to="/dashboard/my-bookings">My Bookings</Link></li>
               <li><Link to="/dashboard/my-reviews">My Reviews</Link></li>
-              <li><Link to="/dashboard/my-notes">My Notes</Link></li>
+              <li><Link to="/dashboard/my-materials">My Study Materials</Link></li>
             </>
           )}
 
@@ -43,7 +43,8 @@ const DashboardLayout = () => {
               <li><Link to="/dashboard/tutor">Tutor Dashboard</Link></li>
               <li><Link to="/dashboard/add-session">Add Session</Link></li>
               <li><Link to="/dashboard/my-sessions">My Sessions</Link></li>
-              <li><Link to="/dashboard/my-materials">My Materials</Link></li>
+              <li><Link to="/dashboard/tutor-materials">Upload Materials</Link></li>
+              <li><Link to="/dashboard/my-material">My Uploaded Materials</Link></li>
             </>
           )}
 

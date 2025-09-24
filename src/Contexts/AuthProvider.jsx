@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
-import { 
-  createUserWithEmailAndPassword, 
-  GoogleAuthProvider, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signInWithPopup, 
-  signOut, 
-  updateProfile 
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile
 } from 'firebase/auth';
 import { auth } from '../Firebase/firebase.init';
 import axios from 'axios';
@@ -44,47 +44,48 @@ const AuthProvider = ({ children }) => {
   };
 
   // 🔹 Listen for auth changes
-useEffect(() => {
-  const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    setUser(currentUser);
+  useEffect(() => {
+    const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
 
-    if (currentUser?.email) {
-      try {
-        // 1️⃣ Get role
-        const res = await axios.get(
-          `http://localhost:5000/users/${currentUser.email}`
-        );
-        setRole(res.data?.role || "student");
+      if (currentUser?.email) {
+        try {
+          // 1️⃣ Get role
+          const res = await axios.get(
+            `http://localhost:5000/users/${currentUser.email}`
+          );
+          setRole(res.data?.role || "student");
 
-        // 2️⃣ Request JWT from backend
-        const jwtRes = await axios.post("http://localhost:5000/jwt", {
-          email: currentUser.email,
-        });
+          // 2️⃣ Request JWT from backend
+          const jwtRes = await axios.post("http://localhost:5000/jwt", {
+            email: currentUser.email,
+          });
 
-        if (jwtRes.data?.token) {
-          localStorage.setItem("access-token", jwtRes.data.token);
+          if (jwtRes.data?.token) {
+            localStorage.setItem("access-token", jwtRes.data.token);
+          }
+        } catch (err) {
+          console.error("AuthProvider error:", err);
+          setRole("student");
+          localStorage.removeItem("access-token"); // clear old token
         }
-      } catch (err) {
-        console.error("AuthProvider error:", err);
+      } else {
         setRole("student");
-        localStorage.removeItem("access-token"); // clear old token
+        localStorage.removeItem("access-token");
       }
-    } else {
-      setRole("student");
-      localStorage.removeItem("access-token");
-    }
 
-    setLoading(false);
-  });
+      setLoading(false);
+    });
 
-  return () => {
-    unSubscribe();
-  };
-}, []);
+    return () => {
+      unSubscribe();
+    };
+  }, []);
 
 
   const authInfo = {
     user,
+    email: user?.email || null,
     role,   // 🔹 Now available everywhere
     loading,
     createUser,
