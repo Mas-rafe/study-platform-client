@@ -2,19 +2,20 @@ import { useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Calendar, Clock, DollarSign, User } from "lucide-react";
 import Swal from "sweetalert2";
+import { useEffect } from "react";
 
-import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 
 import { Button } from "../../../Components/UI/button";
+import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
-import { useEffect } from "react";
+
 
 const SessionDetails = () => {
   const { id } = useParams();
   const axiosSecure = useAxiosSecure();
   const { role, email, user } = UseAuth();
 
-  // ✅ Debug auth info right after render
+  // Debug auth info
   useEffect(() => {
     console.log("DEBUG ROLE/EMAIL:", { role, email, user });
   }, [role, email, user]);
@@ -38,22 +39,14 @@ const SessionDetails = () => {
     session.registrationEnd && new Date(session.registrationEnd) < new Date();
   const canBook = !registrationClosed && role === "student" && !!email;
 
-  // ✅ Book Now Handler
+  // Book Now Handler
   const handleBookNow = async () => {
-    console.log("📌 Book Now clicked", {
-      sessionId: session._id,
-      studentEmail: email,
-      tutorEmail: session.tutorEmail,
-    });
-
     try {
       const res = await axiosSecure.post("/bookings", {
         sessionId: session._id.toString(),
         studentEmail: email,
         tutorEmail: session.tutorEmail,
       });
-
-      console.log("📌 Booking response:", res.data);
 
       Swal.fire(
         res.data.success ? "Booked!" : "Oops!",
@@ -66,7 +59,7 @@ const SessionDetails = () => {
     }
   };
 
-  // ✅ Review Submit
+  // Review Submit
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     const comment = e.target.comment.value;
@@ -75,7 +68,6 @@ const SessionDetails = () => {
     if (!comment || !rating) {
       return Swal.fire("Error!", "Please fill comment & rating", "error");
     }
-    console.log("DEBUG ROLE/EMAIL:", { role, email, user });
 
     try {
       await axiosSecure.post("/reviews", {
@@ -96,10 +88,11 @@ const SessionDetails = () => {
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
+      {/* Header */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-xl text-white">
         <h1 className="text-3xl font-bold">{session.title}</h1>
         <p className="flex items-center gap-2">
-          <User size={18} /> {session.tutorName}
+          <User size={18} /> {session.tutorName || "Unknown Tutor"}
         </p>
         <p className="flex items-center gap-2">
           <Star size={18} className="text-yellow-400" /> Avg:{" "}
@@ -107,20 +100,40 @@ const SessionDetails = () => {
         </p>
       </div>
 
+      {/* Info */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl shadow-md">
           <ul className="space-y-2 text-gray-700">
             <li className="flex items-center gap-2">
               <Calendar size={18} /> Registration:{" "}
-              {new Date(session.registrationStart).toLocaleDateString()} -{" "}
-              {new Date(session.registrationEnd).toLocaleDateString()}
+              {session.registrationStart
+                ? new Date(session.registrationStart).toLocaleDateString()
+                : "?"}{" "}
+              -{" "}
+              {session.registrationEnd
+                ? new Date(session.registrationEnd).toLocaleDateString()
+                : "?"}
             </li>
             <li className="flex items-center gap-2">
-              <Clock size={18} /> Duration: {session.duration} hours
+              <Calendar size={18} /> Class:{" "}
+              {session.classStartDate
+                ? new Date(session.classStartDate).toLocaleDateString()
+                : "?"}{" "}
+              -{" "}
+              {session.classEndDate
+                ? new Date(session.classEndDate).toLocaleDateString()
+                : "?"}
+            </li>
+            <li className="flex items-center gap-2">
+              <Clock size={18} /> Duration: {session.duration || "N/A"} hours
             </li>
             <li className="flex items-center gap-2">
               <DollarSign size={18} /> Fee:{" "}
-              {session.registrationFee === 0 ? "Free" : `$${session.registrationFee}`}
+              {session.registrationFee === 0
+                ? "Free"
+                : session.registrationFee
+                ? `$${session.registrationFee}`
+                : "N/A"}
             </li>
           </ul>
           <div className="mt-6">
@@ -128,8 +141,8 @@ const SessionDetails = () => {
               {registrationClosed
                 ? "Registration Closed"
                 : canBook
-                  ? "Book Now"
-                  : "Login as Student to Book"}
+                ? "Book Now"
+                : "Login as Student to Book"}
             </Button>
           </div>
         </div>

@@ -26,6 +26,11 @@ import AddMaterial from "../pages/Dashboard/TutorDashboard/AddMaterial/AddMateri
 import MyUploadedMaterials from "../pages/Dashboard/TutorDashboard/MyUploadedMaterial/MyUploadedMaterial";
 import TutorDashboardHome from "../pages/Dashboard/TutorDashboard/TutorHome/TutorDashboardHome";
 import StudentDashboardHome from "../pages/Dashboard/StudentDasboard/StudentDasboardHome";
+import StudentBookedSessionDetails from "../pages/Dashboard/StudentDasboard/StudentBookedSessionDetails";
+import StudentBookedSessionMaterials from "../pages/Dashboard/StudentDasboard/StudentBookedSessionMaterials";
+import MyBookings from "../pages/Dashboard/StudentDasboard/MyBooking";
+import CreateNote from "../pages/Dashboard/StudentDasboard/CreateNote";
+import MyNotes from "../pages/Dashboard/StudentDasboard/MyNotes";
 
 const router = createBrowserRouter([
   {
@@ -49,25 +54,57 @@ const router = createBrowserRouter([
         Component: DashboardLayout,
         children: [
           // Student
-          { path: "student", 
-            Component: StudentDashboardHome },
-          { path: "my-bookings", Component: StudentDashboard }, // replace with MyBookings
-          { path: "my-reviews", Component: StudentDashboard }, // replace with MyReviews
-          { path: "my-materials",
+          {
+            path: "student",
+            Component: StudentDashboardHome
+          },
+          {
+            path: "/dashboard/student/bookings/:id",
+            Component: StudentBookedSessionDetails
+          },
+          {
+            path: "my-bookings",
+            Component: MyBookings
+          },
+          { path: "my-reviews", Component: StudentDashboard },
+          {
+            path: "create-note",
+            Component: CreateNote
+          },
+          {
+            path: "my-notes",
+            Component: MyNotes
+          },
+          {
+            path: "my-materials",
             Component: StudentMaterials
-          },   // replace with MyNotes
+          },
+          {
+            path: "/dashboard/student/bookings/:id/materials",
+            Component: StudentBookedSessionMaterials
+          }, // replace with MyNotes
 
           // Tutor
-          { path: "tutor",
-             Component: TutorDashboardHome },
-          { path: "add-session",
-             Component: StudySessionsForm },
-          { path: "my-sessions",
-             Component: MySessions },
-          { path: "tutor-materials",
-            Component: AddMaterial  },
-          { path: "my-material",
-            Component: MyUploadedMaterials },
+          {
+            path: "tutor",
+            Component: TutorDashboardHome
+          },
+          {
+            path: "add-session",
+            Component: StudySessionsForm
+          },
+          {
+            path: "my-sessions",
+            Component: MySessions
+          },
+          {
+            path: "tutor-materials",
+            Component: AddMaterial
+          },
+          {
+            path: "my-material",
+            Component: MyUploadedMaterials
+          },
 
           // Admin
           {
@@ -78,24 +115,26 @@ const router = createBrowserRouter([
           },
           {
             path: "manage-sessions",
-           element: ( <AdminRoute>
-            <ManageSessions />
-           </AdminRoute> )
+            element: (<AdminRoute>
+              <ManageSessions />
+            </AdminRoute>)
           },
           {
             path: "manage-users",
-            element: ( <AdminRoute>
+            element: (<AdminRoute>
               <ManageUsers />
-            </AdminRoute> )
+            </AdminRoute>)
           },
-          { path: "manage-reviews",
+          {
+            path: "manage-reviews",
             element: <AdminRoute>
               <ManageReviews />
             </AdminRoute>
-           },
-          { path: "manage-materials",
+          },
+          {
+            path: "manage-materials",
             element: <AdminRoute>
-              <ManageMaterials/>
+              <ManageMaterials />
             </AdminRoute>
           }
 

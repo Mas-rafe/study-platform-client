@@ -32,7 +32,8 @@ const DashboardLayout = () => {
             <>
               <li><Link to="/dashboard/student">Student Dashboard</Link></li>
               <li><Link to="/dashboard/my-bookings">My Bookings</Link></li>
-              <li><Link to="/dashboard/my-reviews">My Reviews</Link></li>
+              <li><Link to="/dashboard/create-note">Create notes</Link></li>
+              <li><Link to="/dashboard/my-notes">My notes</Link></li>
               <li><Link to="/dashboard/my-materials">My Study Materials</Link></li>
             </>
           )}

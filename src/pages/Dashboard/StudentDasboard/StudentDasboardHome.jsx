@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
 import { Button } from "../../../Components/UI/button";
+import { Link } from "react-router";
 
 const StudentDashboardHome = () => {
   const axiosSecure = useAxiosSecure();
@@ -53,45 +54,7 @@ const StudentDashboardHome = () => {
     enabled: !!email,
   });
 
-  // --- Create note
-  const handleCreateNote = async (e) => {
-    e.preventDefault();
-    const title = e.target.title.value.trim();
-    const description = e.target.description.value.trim();
-    if (!title || !description) {
-      return Swal.fire("Error", "Please provide title and description", "error");
-    }
-    try {
-      await axiosSecure.post("/notes", {
-        email,
-        title,
-        description,
-      });
-      Swal.fire("Saved", "Note created", "success");
-      e.target.reset();
-      refetchNotes();
-    } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || err.message, "error");
-    }
-  };
-
-  // --- Delete note
-  const handleDeleteNote = async (id) => {
-    const ans = await Swal.fire({
-      title: "Delete note?",
-      showCancelButton: true,
-      icon: "warning",
-    });
-    if (!ans.isConfirmed) return;
-    try {
-      await axiosSecure.delete(`/notes/${id}`);
-      Swal.fire("Deleted", "Note removed", "success");
-      refetchNotes();
-    } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || err.message, "error");
-    }
-  };
-
+ 
   // --- Request materials for a booked session
   const viewMaterials = async (sessionId) => {
     if (!sessionId) return;
@@ -167,18 +130,16 @@ const StudentDashboardHome = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    <a
-                      href={`/sessions/${sessionId}`}
-                      className="btn btn-outline btn-sm"
-                    >
-                      View Details
-                    </a>
-                    <button
-                      onClick={() => viewMaterials(sessionId)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      {materialsLoading && selectedSessionForMaterials === sessionId ? "Loading…" : "View Materials"}
-                    </button>
+                    <Link to={`/dashboard/student/bookings/${session._id}`}>
+                      <button className="btn btn-sm bg-blue-500 text-white rounded-md">
+                        View Details
+                      </button>
+                    </Link>
+                    <Link to={`/dashboard/student/bookings/${sessionId}/materials`}>
+                      <button className="btn btn-primary btn-sm">
+                        View Materials
+                      </button>
+                    </Link>
                   </div>
                 </div>
               );
@@ -243,51 +204,8 @@ const StudentDashboardHome = () => {
         </section>
       )}
 
-      {/* Create Note */}
-      <section id="create-note" className="bg-white p-4 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-2">Create a Note</h2>
-        <form onSubmit={handleCreateNote} className="space-y-3">
-          <div>
-            <label className="label">Email</label>
-            <input className="input input-bordered w-full bg-gray-100" value={email} readOnly />
-          </div>
-          <div>
-            <label className="label">Title</label>
-            <input name="title" className="input input-bordered w-full" required />
-          </div>
-          <div>
-            <label className="label">Description</label>
-            <textarea name="description" className="textarea textarea-bordered w-full" rows={4} required />
-          </div>
-          <div>
-            <button type="submit" className="btn btn-primary">Save Note</button>
-          </div>
-        </form>
-      </section>
 
-      {/* My Notes */}
-      <section id="my-notes-section" className="bg-white p-4 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-2">My Notes</h2>
-        {notes.length === 0 ? (
-          <p className="text-gray-500">You have no notes.</p>
-        ) : (
-          <div className="grid gap-3">
-            {notes.map((n) => (
-              <div key={n._id} className="border p-3 rounded flex justify-between items-start">
-                <div>
-                  <div className="font-semibold">{n.title}</div>
-                  <div className="text-sm text-gray-600">{n.description}</div>
-                  <div className="text-xs text-gray-400 mt-2">Created: {new Date(n.createdAt).toLocaleString()}</div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <button className="btn btn-sm btn-outline" onClick={() => Swal.fire("Edit not implemented", "Use update page if needed", "info")}>Edit</button>
-                  <button className="btn btn-sm btn-error" onClick={() => handleDeleteNote(n._id)}>Delete</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+    
     </div>
   );
 };
