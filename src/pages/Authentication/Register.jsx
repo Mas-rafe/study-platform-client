@@ -23,14 +23,14 @@ const Register = () => {
       });
 
       // ✅ Save user to DB
-      await axios.post("http://localhost:5000/users", {
+      await axios.post("https://study-platform-server-ruddy.vercel.app/users", {
         name: data.name,
         email: data.email,
         photo: data.photo,
       });
 
       // ✅ Get JWT token
-      const res = await axios.post("http://localhost:5000/jwt", {
+      const res = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
         email: data.email,
       });
       localStorage.setItem("access-token", res.data.token);

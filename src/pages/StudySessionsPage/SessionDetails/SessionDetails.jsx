@@ -16,9 +16,9 @@ const SessionDetails = () => {
   const { role, email, user } = UseAuth();
 
   // Debug auth info
-  useEffect(() => {
-    console.log("DEBUG ROLE/EMAIL:", { role, email, user });
-  }, [role, email, user]);
+  // useEffect(() => {
+  //   console.log("DEBUG ROLE/EMAIL:", { role, email, user });
+  // }, [role, email, user]);
 
   // Fetch session
   const { data: session, isLoading } = useQuery({

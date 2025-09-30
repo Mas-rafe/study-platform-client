@@ -31,13 +31,15 @@ import StudentBookedSessionMaterials from "../pages/Dashboard/StudentDasboard/St
 import MyBookings from "../pages/Dashboard/StudentDasboard/MyBooking";
 import CreateNote from "../pages/Dashboard/StudentDasboard/CreateNote";
 import MyNotes from "../pages/Dashboard/StudentDasboard/MyNotes";
+import PrivateRoute from "../Routes/PrivateRoute";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
     children: [
-      { index: true, Component: Home },
+      { index: true,
+         Component: Home },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       {
@@ -47,11 +49,15 @@ const router = createBrowserRouter([
       {
 
         path: "session-details/:id",
-        Component: SessionDetails
+       element: <PrivateRoute>
+          <SessionDetails></SessionDetails>
+       </PrivateRoute>
       },
       {
         path: "dashboard",
-        Component: DashboardLayout,
+        element: <PrivateRoute>
+          <DashboardLayout></DashboardLayout>
+        </PrivateRoute>,
         children: [
           // Student
           {

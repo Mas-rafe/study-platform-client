@@ -52,12 +52,12 @@ const AuthProvider = ({ children }) => {
         try {
           // 1️⃣ Get role
           const res = await axios.get(
-            `http://localhost:5000/users/${currentUser.email}`
+            `https://study-platform-server-ruddy.vercel.app/users/${currentUser.email}`
           );
           setRole(res.data?.role || "student");
 
           // 2️⃣ Request JWT from backend
-          const jwtRes = await axios.post("http://localhost:5000/jwt", {
+          const jwtRes = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
             email: currentUser.email,
           });
 

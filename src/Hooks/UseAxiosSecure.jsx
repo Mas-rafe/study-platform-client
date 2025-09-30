@@ -1,10 +1,10 @@
 import axios from "axios";
 
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000", // use env for localhost/dev
 });
 
-// Interceptor → শুধু একবার set হবে
+// Automatically attach JWT token
 axiosSecure.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access-token");
@@ -16,8 +16,18 @@ axiosSecure.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-const useAxiosSecure = () => {
-  return axiosSecure;
-};
+// Optional: handle 401/403 globally
+axiosSecure.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // token invalid or user not authorized
+      console.error("Unauthorized access - maybe log out the user");
+    }
+    return Promise.reject(error);
+  }
+);
+
+const useAxiosSecure = () => axiosSecure;
 
 export default useAxiosSecure;

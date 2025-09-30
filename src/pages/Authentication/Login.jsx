@@ -18,7 +18,7 @@ const Login = () => {
       await signIn(data.email, data.password);
 
       // ✅ Get JWT token
-      const res = await axios.post("http://localhost:5000/jwt", {
+      const res = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
         email: data.email,
       });
       localStorage.setItem("access-token", res.data.token);
