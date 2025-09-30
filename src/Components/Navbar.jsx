@@ -1,5 +1,4 @@
 import Swal from "sweetalert2";
-
 import { useContext } from "react";
 import { AuthContext } from "../Contexts/AuthContext";
 import { Link, NavLink } from "react-router";
@@ -27,8 +26,16 @@ const Navbar = ({ onDashboardClick }) => {
     }
   };
 
+  // 🔹 Custom navlink style
   const linkClass = ({ isActive }) =>
-    isActive ? "text-primary font-semibold" : "hover:text-primary/80";
+    `relative px-3 py-2 rounded-md transition-all duration-300 
+     ${isActive
+        ? "text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-md"
+        : "text-gray-700 hover:text-indigo-600 hover:after:w-full"
+     }
+     after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 
+     after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 
+     after:transition-all after:duration-300 hover:after:w-full`;
 
   const navItems = (
     <>
@@ -38,31 +45,30 @@ const Navbar = ({ onDashboardClick }) => {
       <li><NavLink to="/about" className={linkClass}>About</NavLink></li>
       {user && (
         <li>
-          <Link to="/dashboard" className="hover:text-primary/80">
+          <Link to="/dashboard" className="relative px-3 py-2 rounded-md text-gray-700 hover:text-indigo-600 hover:after:w-full after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-gradient-to-r after:from-indigo-500 after:to-purple-500 after:transition-all after:duration-300">
             Dashboard
           </Link>
         </li>
       )}
-
     </>
   );
 
   return (
-    <div className="navbar bg-base-100 shadow-sm sticky top-0 z-50 px-4">
+    <div className="navbar sticky top-0 z-50 shadow-md bg-gradient-to-r from-indigo-50 to-purple-50 px-4">
       {/* START */}
       <div className="navbar-start">
         {/* Mobile menu */}
         <div className="dropdown lg:hidden">
           <label tabIndex={0} className="btn btn-ghost" aria-label="Open menu">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6"
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                 d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </label>
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-56 z-[60]"
+            className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-56 z-[60]"
           >
             {navItems}
             <div className="mt-2 border-t pt-2">
@@ -80,13 +86,15 @@ const Navbar = ({ onDashboardClick }) => {
 
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <span className="text-lg md:text-2xl font-bold">StudyHub</span>
+          <span className="text-xl md:text-2xl font-extrabold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+            StudyHub
+          </span>
         </Link>
       </div>
 
       {/* CENTER (desktop menu) */}
       <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal gap-1">{navItems}</ul>
+        <ul className="menu menu-horizontal gap-2">{navItems}</ul>
       </div>
 
       {/* END */}
@@ -94,7 +102,7 @@ const Navbar = ({ onDashboardClick }) => {
         {user ? (
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-              <div className="w-9 rounded-full">
+              <div className="w-9 rounded-full ring-2 ring-indigo-400">
                 <img
                   alt="profile"
                   src={
@@ -108,18 +116,17 @@ const Navbar = ({ onDashboardClick }) => {
             </div>
             <ul
               tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-56 z-[60]"
+              className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-white rounded-box w-56 z-[60]"
             >
               <li className="px-2 py-1 text-xs opacity-70">{user.email}</li>
-              {/* 🔹 dashboard button inside avatar dropdown */}
               <li><button onClick={onDashboardClick}>Dashboard</button></li>
               <li><button onClick={handleLogOut} className="text-error">Log out</button></li>
             </ul>
           </div>
         ) : (
           <>
-            <Link to="/login" className="btn btn-primary">Login</Link>
-            <Link to="/register" className="btn btn-outline">Register</Link>
+            <Link to="/login" className="btn bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-none hover:scale-105 transition">Login</Link>
+            <Link to="/register" className="btn btn-outline hover:border-indigo-500 hover:text-indigo-600">Register</Link>
           </>
         )}
       </div>
