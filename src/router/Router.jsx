@@ -32,6 +32,7 @@ import MyBookings from "../pages/Dashboard/StudentDasboard/MyBooking";
 import CreateNote from "../pages/Dashboard/StudentDasboard/CreateNote";
 import MyNotes from "../pages/Dashboard/StudentDasboard/MyNotes";
 import PrivateRoute from "../Routes/PrivateRoute";
+import ManageBookings from "../pages/Dashboard/AdminDashboard/ManageBookings";
 
 const router = createBrowserRouter([
   {
@@ -123,6 +124,11 @@ const router = createBrowserRouter([
             path: "manage-sessions",
             element: (<AdminRoute>
               <ManageSessions />
+            </AdminRoute>)
+          },
+          {  path: "manage-bookings",
+            element: (<AdminRoute>
+              <ManageBookings />
             </AdminRoute>)
           },
           {

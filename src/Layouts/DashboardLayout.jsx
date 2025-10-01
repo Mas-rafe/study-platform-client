@@ -9,8 +9,10 @@ import {
   FaRegStickyNote,
   FaFolderOpen,
   FaStar,
+ 
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
+import { HiPencilAlt } from "react-icons/hi";
 
 const DashboardLayout = () => {
   const { role } = UseAuth(); // "admin" | "tutor" | "student"
@@ -113,6 +115,11 @@ const DashboardLayout = () => {
               <li>
                 <Link to="/dashboard/manage-sessions" className="flex items-center gap-2 hover:bg-pink-200 rounded-lg p-2 transition">
                   <FaClipboardList /> Manage Sessions
+                </Link>
+              </li>
+              <li>
+                <Link to="/dashboard/manage-bookings" className="flex items-center gap-2 hover:bg-pink-200 rounded-lg p-2 transition">
+                  <HiPencilAlt /> Manage Bookings
                 </Link>
               </li>
               <li>

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosSecure = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000", // use env for localhost/dev
+  baseURL: 'https://study-platform-server-ruddy.vercel.app'
 });
 
 // Automatically attach JWT token
