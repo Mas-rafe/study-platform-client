@@ -8,7 +8,7 @@ Students can browse and book study sessions, tutors can manage their sessions, a
 ## 🚀 Live Links
 
 - 🌐 **Live Site:** (https://study-platform-f9af6.firebaseapp.com/)
-- ⚙️ **Backend API:** (study-platform-server-ruddy.vercel.app )
+- ⚙️ **Backend API:** study-platform-server-ruddy.vercel.app
 
 ---
 
