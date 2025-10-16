@@ -7,8 +7,8 @@ Students can browse and book study sessions, tutors can manage their sessions, a
 
 ## 🚀 Live Links
 
-- 🌐 **Live Site:** [https://studyhub-frontend.web.app](https://studyhub-frontend.web.app)  
-- ⚙️ **Backend API:** [https://study-platform-server-ruddy.vercel.app](https://study-platform-server-ruddy.vercel.app)
+- 🌐 **Live Site:** (https://study-platform-f9af6.firebaseapp.com/)
+- ⚙️ **Backend API:** (study-platform-server-ruddy.vercel.app )
 
 ---
 
@@ -58,15 +58,9 @@ Students can browse and book study sessions, tutors can manage their sessions, a
 - Animated transitions using Framer Motion  
 - Modern and clean design with DaisyUI + shadcn  
 
----
 
-## 🖼️ Screenshot
 
-> *(Optional: Add your project screenshot here)*  
-> Example:
-> ![StudyHub Screenshot](./screenshot.png)
 
----
 
 ## ⚙️ Installation & Local Setup
 
