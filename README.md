@@ -1,12 +1,78 @@
-# React + Vite
+# 🎓 StudyHub (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**StudyHub** is a modern MERN-based learning platform that connects **students**, **tutors**, and **admins** under one system.  
+Students can browse and book study sessions, tutors can manage their sessions, and admins can monitor all activities — ensuring a smooth, secure, and collaborative learning experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Live Links
 
-## Expanding the ESLint configuration
+- 🌐 **Live Site:** [https://studyhub-frontend.web.app](https://studyhub-frontend.web.app)  
+- ⚙️ **Backend API:** [https://study-platform-server-ruddy.vercel.app](https://study-platform-server-ruddy.vercel.app)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🧠 Technologies Used
+
+**Frontend Stack:**
+- ⚛️ React.js (Vite)
+- 🔀 React Router v6
+- 🔥 Firebase Authentication
+- 🔄 TanStack Query
+- 🌐 Axios (with JWT support)
+- 🎨 TailwindCSS + DaisyUI
+- 💅 shadcn/ui (beautiful UI components)
+- 🎭 Framer Motion (animations)
+- 🍬 SweetAlert2
+- 🧩 React Icons
+
+---
+
+## 🌟 Core Features
+
+### 👨‍🎓 Student Panel
+- View all approved study sessions  
+- Book sessions securely  
+- Manage and cancel bookings  
+- Leave reviews for completed sessions  
+
+### 👨‍🏫 Tutor Panel
+- Create and edit study sessions  
+- Re-submit rejected sessions for admin approval  
+- Upload and manage materials & notes  
+
+### 🧑‍💼 Admin Dashboard
+- Approve / Reject study sessions  
+- Manage users, sessions, bookings, reviews, and materials  
+- View overall statistics (total users, approved/pending/rejected sessions, etc.)
+
+### 🔐 Authentication & Security
+- Firebase Authentication (Email + Google)  
+- JWT tokens for secure backend communication  
+- Role-based protected routes (Student / Tutor / Admin)
+
+### 💎 UI & UX Highlights
+- Fully responsive design (mobile-first)  
+- Gradient-based cards and two-tone navbar  
+- SweetAlert2 modals for confirmations  
+- Animated transitions using Framer Motion  
+- Modern and clean design with DaisyUI + shadcn  
+
+---
+
+## 🖼️ Screenshot
+
+> *(Optional: Add your project screenshot here)*  
+> Example:
+> ![StudyHub Screenshot](./screenshot.png)
+
+---
+
+## ⚙️ Installation & Local Setup
+
+Follow these steps to run the frontend locally:
+
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/yourusername/studyhub-frontend.git
+cd studyhub-frontend
