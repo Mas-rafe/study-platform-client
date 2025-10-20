@@ -1,16 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Star, BookOpen, Users, Award } from "lucide-react";
-import { useState, useEffect } from "react";
+
 import useAxiosSecure from "../../Hooks/UseAxiosSecure";
 import { Link } from "react-router";
+import BannerCarousel from "../../Components/BannerCarousel";
 
+"../../public/assets/image1.jpg"
 
-const bannerImages = [
-  "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b",
-  "https://images.unsplash.com/photo-1503676260728-1c00da094a0b",
-  "https://images.unsplash.com/photo-1513258496099-48168024aec0",
-];
 
 const Home = () => {
   const axiosSecure = useAxiosSecure();
@@ -24,54 +21,12 @@ const Home = () => {
     },
   });
 
-  // Carousel state
-  const [current, setCurrent] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % bannerImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-gray-50  ">
       {/* Banner Carousel */}
-      <section className="relative h-[70vh] overflow-hidden rounded-2xl mb-12">
-        {bannerImages.map((img, index) => (
-          <motion.div
-            key={index}
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${img})` }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: current === index ? 1 : 0 }}
-            transition={{ duration: 1 }}
-          >
-            <div className="w-full h-full bg-black bg-opacity-60 flex items-center justify-center text-center">
-              <motion.div
-                initial={{ y: 50, opacity: 0 }}
-                animate={{
-                  y: current === index ? 0 : 50,
-                  opacity: current === index ? 1 : 0,
-                }}
-                transition={{ duration: 0.8 }}
-                className="text-white px-4"
-              >
-                <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                  Unlock Knowledge, Anytime, Anywhere
-                </h1>
-                <p className="mb-6 text-lg md:text-xl max-w-2xl mx-auto">
-                  Book study sessions with expert tutors, access study
-                  materials, and boost your learning journey.
-                </p>
-                <Link to="/sessions" className="btn btn-primary">
-                  Explore Sessions
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-        ))}
-      </section>
-
+   <BannerCarousel/>
       {/* Sessions Section */}
       <section className="py-12 container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
@@ -81,7 +36,7 @@ const Home = () => {
           <p className="text-center">Loading sessions…</p>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.slice(0, 6).map((s) => {
+            {sessions.slice(0, 9).map((s) => {
               const now = new Date();
               const regStart = new Date(s.registrationStart);
               const regEnd = new Date(s.registrationEnd);

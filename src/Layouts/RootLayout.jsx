@@ -13,10 +13,7 @@ const RootLayout = () => {
   return (
     <div>
       <Navbar onDashboardClick={() => setIsDrawerOpen(true)} />
-      {/* <DashboardDrawer
-        open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      /> */}
+    
       <Outlet />
       {/* <Footer /> */}
     </div>
