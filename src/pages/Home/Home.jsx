@@ -24,7 +24,7 @@ const Home = () => {
 
 
   return (
-    <div className="bg-gray-50  ">
+    <div className="  ">
       {/* Banner Carousel */}
    <BannerCarousel/>
       {/* Sessions Section */}

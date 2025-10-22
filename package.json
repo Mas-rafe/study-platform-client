@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/vite": "^4.1.12",
     "@tanstack/react-query": "^5.89.0",
     "axios": "^1.11.0",
@@ -22,7 +23,8 @@
     "react-icons": "^5.5.0",
     "react-router": "^7.8.2",
     "sweetalert2": "^11.23.0",
-    "tailwindcss": "^4.1.12"
+    "tailwindcss": "^4.1.12",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

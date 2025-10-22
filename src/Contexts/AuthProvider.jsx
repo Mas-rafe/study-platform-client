@@ -12,12 +12,14 @@ import {
 import { auth } from '../Firebase/firebase.init';
 import axios from 'axios';
 
+
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("student"); // 🔹 default role
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
   const createUser = (email, password) => {
     setLoading(true);
@@ -77,10 +79,32 @@ const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
+       // 🔹 Apply saved theme on mount
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+
     return () => {
       unSubscribe();
     };
   }, []);
+
+  // 🔹 Theme toggle function
+  const toggleTheme = () => {
+    setDarkMode((prev) => {
+      const newMode = !prev;
+      if (newMode) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+      return newMode;
+    });
+  };
 
 
   const authInfo = {
@@ -93,6 +117,8 @@ const AuthProvider = ({ children }) => {
     updateUserProfile,
     logOut,
     signInWithGoogle,
+   darkMode,
+    toggleTheme
   };
 
   return (
