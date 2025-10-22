@@ -87,7 +87,7 @@ const SessionDetails = () => {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <div className="pt-20 min-h-screen max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-2xl shadow-xl text-white">
         <h1 className="text-3xl font-bold">{session.title}</h1>

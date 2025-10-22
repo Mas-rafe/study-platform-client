@@ -28,7 +28,7 @@ const Home = () => {
       {/* Banner Carousel */}
    <BannerCarousel/>
       {/* Sessions Section */}
-      <section className="py-12 container mx-auto px-4">
+      <section className="py-12 container mx-auto bg-amber-200 px-4">
         <h2 className="text-3xl font-bold text-center mb-8 flex items-center justify-center gap-2">
           <BookOpen className="text-blue-600" /> Available Study Sessions
         </h2>

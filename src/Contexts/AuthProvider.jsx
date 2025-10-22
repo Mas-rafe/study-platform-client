@@ -46,66 +46,69 @@ const AuthProvider = ({ children }) => {
   };
 
   // 🔹 Listen for auth changes
-  useEffect(() => {
-    const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
+ useEffect(() => {
+  // Theme: Load first — before auth
+  const savedTheme = localStorage.getItem("theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-      if (currentUser?.email) {
-        try {
-          // 1️⃣ Get role
-          const res = await axios.get(
-            `https://study-platform-server-ruddy.vercel.app/users/${currentUser.email}`
-          );
-          setRole(res.data?.role || "student");
+  if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+    setDarkMode(true);
+    document.documentElement.classList.add("dark");
+  } else {
+    setDarkMode(false);
+    document.documentElement.classList.remove("dark");
+  }
 
-          // 2️⃣ Request JWT from backend
-          const jwtRes = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
-            email: currentUser.email,
-          });
+  // Auth listener
+  const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setUser(currentUser);
 
-          if (jwtRes.data?.token) {
-            localStorage.setItem("access-token", jwtRes.data.token);
-          }
-        } catch (err) {
-          console.error("AuthProvider error:", err);
-          setRole("student");
-          localStorage.removeItem("access-token"); // clear old token
+    if (currentUser?.email) {
+      try {
+        const res = await axios.get(
+          `https://study-platform-server-ruddy.vercel.app/users/${currentUser.email}`
+        );
+        setRole(res.data?.role || "student");
+
+        const jwtRes = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
+          email: currentUser.email,
+        });
+
+        if (jwtRes.data?.token) {
+          localStorage.setItem("access-token", jwtRes.data.token);
         }
-      } else {
+      } catch (err) {
+        console.error("AuthProvider error:", err);
         setRole("student");
         localStorage.removeItem("access-token");
       }
-
-      setLoading(false);
-    });
-
-       // 🔹 Apply saved theme on mount
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      setDarkMode(true);
-      document.documentElement.classList.add("dark");
+    } else {
+      setRole("student");
+      localStorage.removeItem("access-token");
     }
 
-    return () => {
-      unSubscribe();
-    };
-  }, []);
+    setLoading(false);
+  });
 
-  // 🔹 Theme toggle function
-  const toggleTheme = () => {
-    setDarkMode((prev) => {
-      const newMode = !prev;
-      if (newMode) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
-      return newMode;
-    });
+  return () => {
+    unSubscribe();
   };
+}, []);
 
+// toggleTheme — আপনার লজিক ১০০% সঠিক
+const toggleTheme = () => {
+  setDarkMode((prev) => {
+    const newMode = !prev;
+    if (newMode) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+    return newMode;
+  });
+};
 
   const authInfo = {
     user,

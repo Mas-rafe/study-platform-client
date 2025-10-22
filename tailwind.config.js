@@ -1,13 +1,17 @@
 /** @type {import('tailwindcss').Config} */
-
 module.exports = {
-  darkMode: "class", // <-- important for manual dark theme toggle
+  darkMode: "class",
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}", // scan all React files
+    "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html"
   ],
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require("daisyui")
+  ],
+  daisyui: {
+    themes: ["light", "dark"],
+  },
 };

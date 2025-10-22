@@ -1,2 +1,7 @@
-@import "tailwindcss";
-@plugin "daisyui";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  @apply min-h-screen bg-gray-50 dark:bg-gray-900;
+}
