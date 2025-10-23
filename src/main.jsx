@@ -13,9 +13,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <RouterProvider router={router} />
-        
+        </div>
       </QueryClientProvider>
     </AuthProvider>
   </StrictMode>,

@@ -57,9 +57,9 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <PrivateRoute>
-          <div className="pt-20 max-h-screen">
+          
           <DashboardLayout></DashboardLayout>
-          </div>
+         
         </PrivateRoute>,
         children: [
           // Student
