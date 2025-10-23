@@ -258,7 +258,7 @@ const ManageSessions = () => {
                     {/* Actions */}
                     <div className="flex gap-2 pt-3 border-t border-gray-100">
                       <Link
-                        to={`/session/${session._id}`}
+                        to={`/session-details/${session._id}`}
                         className="flex-1 btn btn-outline btn-primary btn-sm rounded-lg"
                       >
                         View
