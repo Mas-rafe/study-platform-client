@@ -6,7 +6,7 @@ import useAxiosSecure from "../../Hooks/UseAxiosSecure";
 import { Link } from "react-router";
 import BannerCarousel from "../../Components/BannerCarousel";
 
-"../../public/assets/image1.jpg"
+
 
 
 const Home = () => {
@@ -24,7 +24,7 @@ const Home = () => {
 
 
   return (
-    <div className="  ">
+    <div className=" ">
       {/* Banner Carousel */}
    <BannerCarousel/>
       {/* Sessions Section */}

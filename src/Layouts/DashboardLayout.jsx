@@ -23,21 +23,21 @@ const DashboardLayout = () => {
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Page content */}
-      <div className="drawer-content flex flex-col mt-8">
+      <div className="drawer-content flex flex-col ">
         <label
           htmlFor="dashboard-drawer"
-          className="btn btn-primary drawer-button lg:hidden  ml-2"
+          className=" mt-20  btn btn-primary drawer-button  lg:hidden ml-2"
         >
           Open Dashboard
         </label>
 
-        <div className="p-6">
+        <div className="p-6 lg:mt-10">
           <Outlet />
         </div>
       </div>
 
       {/* Sidebar content */}
-      <div className="drawer-side mt-[64px] pt-20 h-screen lg:mt-0">
+      <div className="drawer-side  pt-20 h-screen lg:mt-0">
         <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
         <ul className="menu p-4 w-72 min-h-full 
           bg-gradient-to-b from-indigo-100 via-purple-100 to-pink-100 
