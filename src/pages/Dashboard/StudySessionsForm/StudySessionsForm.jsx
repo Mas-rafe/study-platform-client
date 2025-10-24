@@ -6,20 +6,21 @@ import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
+import { Upload, Calendar, Clock, DollarSign, BookOpen, FileText, AlertCircle } from "lucide-react";
 
 // Zod Schema
 const sessionSchema = z.object({
   title: z.string().min(5, "Title must be at least 5 characters"),
-  subject: z.string().min(2, "Short subject"),
-  description: z.string().min(20, "Description too short"),
-  registrationStart: z.string().min(1, "Required"),
-  registrationEnd: z.string().min(1, "Required"),
-  classStart: z.string().min(1, "Required"),
-  classStartTime: z.string().min(1, "Required"),
-  classEnd: z.string().min(1, "Required"),
-  duration: z.coerce.number().min(1, "Duration ≥ 1 hour"),
-  registrationFee: z.coerce.number().min(0, "Fee ≥ 0"),
-  image: z.any(), // File object
+  subject: z.string().min(2, "Subject is too short"),
+  description: z.string().min(20, "Description must be at least 20 characters"),
+  registrationStart: z.string().min(1, "Registration start date is required"),
+  registrationEnd: z.string().min(1, "Registration end date is required"),
+  classStart: z.string().min(1, "Class start date is required"),
+  classStartTime: z.string().min(1, "Class start time is required"),
+  classEnd: z.string().min(1, "Class end date is required"),
+  duration: z.coerce.number().min(1, "Duration must be at least 1 hour"),
+  registrationFee: z.coerce.number().min(0, "Fee cannot be negative"),
+  image: z.any().refine((files) => files?.length > 0, "Image is required"),
 });
 
 const StudySessionsForm = () => {
@@ -41,7 +42,6 @@ const StudySessionsForm = () => {
     defaultValues: { registrationFee: 0 },
   });
 
-  // Upload to ImgBB
   const uploadToImgBB = async (file) => {
     const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
     if (!apiKey) throw new Error("Add VITE_IMGBB_API_KEY to .env");
@@ -51,23 +51,19 @@ const StudySessionsForm = () => {
     formData.append("image", file);
 
     try {
-      console.log("Uploading:", file.name);
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: "POST",
         body: formData,
       });
 
       const result = await res.json();
-
       if (!res.ok || !result.success) {
-        throw new Error(result.error?.message || "Upload failed");
+        throw new Error(result.error?.message || "Image upload failed");
       }
 
-      console.log("Uploaded:", result.data.url);
       setUploading(false);
       return result.data.url;
     } catch (err) {
-      console.error("Upload failed:", err);
       setUploading(false);
       throw err;
     }
@@ -75,9 +71,6 @@ const StudySessionsForm = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("=== FORM DATA ===");
-      console.log("data.image:", data.image);
-
       let imageUrl = null;
       if (data.image && data.image[0]) {
         imageUrl = await uploadToImgBB(data.image[0]);
@@ -98,212 +91,340 @@ const StudySessionsForm = () => {
         tutorEmail: user?.email || "unknown@example.com",
       };
 
-      console.log("Sending to /sessions:", sessionData);
+      const res = await axiosSecure.post("/sessions", sessionData);
 
-      // SEND AS JSON — NOT FormData
-      const res = await fetch("https://study-platform-server-ruddy.vercel.app/sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(sessionData),
-      });
-
-      const result = await res.json();
-
-      if (result.success && result.insertedId) {
+      if (res.data.success && res.data.insertedId) {
         Swal.fire({
           icon: "success",
-          title: "Success!",
-          text: "Session created!",
+          title: "Session Created!",
+          text: "Your study session is now pending approval.",
           timer: 2000,
+          customClass: { confirmButton: "btn btn-success" },
         });
         reset();
         setImagePreview(null);
         imageInputRef.current.value = null;
       } else {
-        throw new Error(result.message || "Failed to create session");
+        throw new Error(res.data.message || "Failed to create session");
       }
     } catch (err) {
       console.error("Error:", err);
-      Swal.fire("Error", err.message || "Something went wrong", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: err.message || "Something went wrong",
+        customClass: { confirmButton: "btn btn-error" },
+      });
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-lg"
-    >
-      <h2 className="text-3xl font-bold text-center mb-8 text-primary">
-        Create Study Session
-      </h2>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* IMAGE UPLOAD */}
-        <motion.div className="flex flex-col items-center">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Session Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            ref={imageInputRef}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                setValue("image", e.target.files); // For react-hook-form
-                const reader = new FileReader();
-                reader.onloadend = () => setImagePreview(reader.result);
-                reader.readAsDataURL(file);
-              }
-            }}
-            className="hidden"
-            id="image-upload"
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+        className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-10"
+      >
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-center relative mb-8"
+        >
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-3xl opacity-20 rounded-2xl"></div>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            Create a New Study Session
+          </h2>
+          <p className="text-gray-600 mt-2 text-lg">Engage your students with a new learning experience</p>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: "120px" }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"
           />
-          <label
-            htmlFor="image-upload"
-            className="cursor-pointer flex flex-col items-center justify-center w-64 h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary transition-colors"
-          >
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <div className="text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 48 48"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l16-12 16 12v20a4 4 0 01-4 4H8a4 4 0 01-4-4V16z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 32l4-8 4 8m-8 4h8"
-                  />
-                </svg>
-                <p className="mt-2 text-sm text-gray-600">Click to upload</p>
-              </div>
-            )}
-          </label>
-          {uploading && (
-            <p className="mt-2 text-sm text-blue-600 animate-pulse">
-              Uploading...
-            </p>
-          )}
-          {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>}
         </motion.div>
 
-        {/* Title & Subject */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="label font-semibold">Session Title</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          {/* Image Upload */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col items-center"
+          >
+            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-600" /> Session Image
+            </label>
             <input
-              {...register("title")}
-              placeholder="e.g. Advanced React"
-              className="input input-bordered w-full"
+              type="file"
+              accept="image/*"
+              ref={imageInputRef}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setValue("image", e.target.files);
+                  const reader = new FileReader();
+                  reader.onloadend = () => setImagePreview(reader.result);
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="hidden"
+              id="image-upload"
             />
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>}
-          </div>
-          <div>
-            <label className="label font-semibold">Subject</label>
-            <input
-              {...register("subject")}
-              placeholder="e.g. Web Dev"
-              className="input input-bordered w-full"
+            <label
+              htmlFor="image-upload"
+              className="cursor-pointer flex flex-col items-center justify-center w-80 h-48 border-2 border-dashed border-indigo-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition-all duration-300"
+            >
+              {imagePreview ? (
+                <motion.img
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-full object-cover rounded-xl"
+                />
+              ) : (
+                <div className="text-center">
+                  <Upload className="mx-auto h-12 w-12 text-indigo-400" />
+                  <p className="mt-2 text-sm text-gray-600">Upload a session image</p>
+                </div>
+              )}
+            </label>
+            {uploading && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-2 text-sm text-indigo-600 animate-pulse flex items-center gap-2"
+              >
+                <Upload className="w-4 h-4" /> Uploading...
+              </motion.p>
+            )}
+            {errors.image && (
+              <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" /> {errors.image.message}
+              </p>
+            )}
+          </motion.div>
+
+          {/* Title & Subject */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-indigo-600" /> Session Title
+              </label>
+              <input
+                {...register("title")}
+                placeholder="e.g. Advanced React for Beginners"
+                className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+              />
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" /> {errors.title.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-indigo-600" /> Subject
+              </label>
+              <input
+                {...register("subject")}
+                placeholder="e.g. Web Development"
+                className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+              />
+              {errors.subject && (
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" /> {errors.subject.message}
+                </p>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Description */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-600" /> Description
+            </label>
+            <textarea
+              {...register("description")}
+              rows={5}
+              placeholder="Describe what students will learn in this session..."
+              className="textarea w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
             />
-            {errors.subject && <p className="text-red-500 text-sm mt-1">{errors.subject.message}</p>}
-          </div>
-        </div>
+            {errors.description && (
+              <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" /> {errors.description.message}
+              </p>
+            )}
+          </motion.div>
 
-        {/* Description */}
-        <div>
-          <label className="label font-semibold">Description</label>
-          <textarea
-            {...register("description")}
-            rows={4}
-            placeholder="What will students learn?"
-            className="textarea textarea-bordered w-full"
-          />
-          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>}
-        </div>
+          {/* Schedule */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-indigo-600" /> Schedule
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Registration Start
+                </label>
+                <input
+                  type="date"
+                  {...register("registrationStart")}
+                  className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                />
+                {errors.registrationStart && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" /> {errors.registrationStart.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Registration End
+                </label>
+                <input
+                  type="date"
+                  {...register("registrationEnd")}
+                  className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                />
+                {errors.registrationEnd && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" /> {errors.registrationEnd.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Class Start Date
+                </label>
+                <input
+                  type="date"
+                  {...register("classStart")}
+                  className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                />
+                {errors.classStart && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" /> {errors.classStart.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Class Start Time
+                </label>
+                <input
+                  type="time"
+                  {...register("classStartTime")}
+                  className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                />
+                {errors.classStartTime && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" /> {errors.classStartTime.message}
+                  </p>
+                )}
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> Class End Date
+                </label>
+                <input
+                  type="date"
+                  {...register("classEnd")}
+                  className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+                />
+                {errors.classEnd && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" /> {errors.classEnd.message}
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
 
-        {/* Schedule */}
-        <div>
-          <h3 className="font-semibold mb-3 text-lg">Schedule</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Duration & Fee */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
             <div>
-              <label className="label text-sm">Registration Start</label>
-              <input type="date" {...register("registrationStart")} className="input input-bordered w-full" />
-              {errors.registrationStart && <p className="text-red-500 text-sm mt-1">{errors.registrationStart.message}</p>}
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Duration (hours)
+              </label>
+              <input
+                type="number"
+                {...register("duration", { valueAsNumber: true })}
+                placeholder="e.g. 2"
+                className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+              />
+              {errors.duration && (
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" /> {errors.duration.message}
+                </p>
+              )}
             </div>
             <div>
-              <label className="label text-sm">Registration End</label>
-              <input type="date" {...register("registrationEnd")} className="input input-bordered w-full" />
-              {errors.registrationEnd && <p className="text-red-500 text-sm mt-1">{errors.registrationEnd.message}</p>}
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <DollarSign className="w-4 h-4" /> Registration Fee ($)
+              </label>
+              <input
+                type="number"
+                {...register("registrationFee", { valueAsNumber: true })}
+                placeholder="e.g. 0 (Free)"
+                className="input w-full rounded-lg border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500 transition-all"
+              />
+              {errors.registrationFee && (
+                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" /> {errors.registrationFee.message}
+                </p>
+              )}
             </div>
-            <div>
-              <label className="label text-sm">Class Start Date</label>
-              <input type="date" {...register("classStart")} className="input input-bordered w-full" />
-              {errors.classStart && <p className="text-red-500 text-sm mt-1">{errors.classStart.message}</p>}
-            </div>
-            <div>
-              <label className="label text-sm">Class Start Time</label>
-              <input type="time" {...register("classStartTime")} className="input input-bordered w-full" />
-              {errors.classStartTime && <p className="text-red-500 text-sm mt-1">{errors.classStartTime.message}</p>}
-            </div>
-            <div className="md:col-span-2">
-              <label className="label text-sm">Class End Date</label>
-              <input type="date" {...register("classEnd")} className="input input-bordered w-full" />
-              {errors.classEnd && <p className="text-red-500 text-sm mt-1">{errors.classEnd.message}</p>}
-            </div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Duration & Fee */}
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="label font-semibold">Duration (hours)</label>
-            <input
-              type="number"
-              {...register("duration", { valueAsNumber: true })}
-              placeholder="2"
-              className="input input-bordered w-full"
-            />
-            {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration.message}</p>}
-          </div>
-          <div>
-            <label className="label font-semibold">Registration Fee ($)</label>
-            <input
-              type="number"
-              {...register("registrationFee", { valueAsNumber: true })}
-              placeholder="0 = Free"
-              className="input input-bordered w-full"
-            />
-          </div>
-        </div>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={isSubmitting || uploading}
-          className="btn btn-primary w-full mt-6"
-        >
-          {isSubmitting || uploading ? "Creating..." : "Create Session"}
-        </button>
-      </form>
-    </motion.div>
+          {/* Submit */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            <button
+              type="submit"
+              disabled={isSubmitting || uploading}
+              className={`btn w-full rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 ${
+                isSubmitting || uploading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              {isSubmitting || uploading ? (
+                <span className="flex items-center gap-2">
+                  <span className="loading loading-spinner"></span> Creating...
+                </span>
+              ) : (
+                "Create Session"
+              )}
+            </button>
+          </motion.div>
+        </form>
+      </motion.div>
+    </div>
   );
 };
 
