@@ -4,15 +4,27 @@ import Swal from "sweetalert2";
 import useAxiosSecure from "../../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../../Hooks/UseAuth";
 import { motion } from "framer-motion";
-import { Upload, FileText, Mail, Tag, Text, Loader2 } from "lucide-react";
+import { Upload, FileText, Mail, Text, Loader2, AlertCircle, Book } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 const AddMaterial = () => {
   const { user } = UseAuth();
   const axiosSecure = useAxiosSecure();
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch tutor sessions
+  const { data: sessions = [], isLoading: sessionsLoading, error: sessionsError } = useQuery({
+    queryKey: ["tutorSessions", user?.email],
+    queryFn: async () => {
+      if (!user?.email) return [];
+      const res = await axiosSecure.get(`/sessions/tutor/${user?.email}`);
+      return res.data;
+    },
+    enabled: !!user?.email,
+  });
 
   // ImgBB upload function
   const uploadToImgBB = async (file) => {
@@ -38,7 +50,7 @@ const AddMaterial = () => {
         imageUrl = await uploadToImgBB(data.file[0]);
       }
 
-      // Prepare JSON data for backend
+      // Prepare JSON data
       const materialData = {
         sessionId: data.sessionId,
         title: data.title,
@@ -78,6 +90,30 @@ const AddMaterial = () => {
     }
   };
 
+  // Loading state
+  if (sessionsLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="w-16 h-16 text-indigo-600" />
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (sessionsError) {
+    return (
+      <div className="text-center py-16 text-red-500 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <AlertCircle className="w-16 h-16 mx-auto mb-4" />
+        <p>Error loading sessions: {sessionsError.message}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
       <div className="max-w-xl mx-auto">
@@ -110,98 +146,112 @@ const AddMaterial = () => {
           transition={{ delay: 0.3 }}
           className="bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-lg p-6 md:p-8 border border-indigo-100"
         >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Session ID */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <Tag className="w-4 h-4 text-indigo-600" /> Session ID
-              </label>
-              <input
-                {...register("sessionId", { required: "Session ID is required" })}
-                className={`w-full input input-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 ${errors.sessionId ? "border-red-500" : ""}`}
-                placeholder="Enter Session ID"
-              />
-              {errors.sessionId && (
-                <p className="text-red-500 text-xs mt-1">{errors.sessionId.message}</p>
-              )}
+          {sessions.length === 0 ? (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-500">You have no sessions to upload materials for.</p>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Session Dropdown */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Book className="w-4 h-4 text-indigo-600" /> Select Session
+                </label>
+                <select
+                  {...register("sessionId", { required: "Please select a session" })}
+                  className={`w-full select select-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 ${errors.sessionId ? "border-red-500" : ""}`}
+                  defaultValue=""
+                >
+                  <option value="" disabled>Select a session</option>
+                  {sessions.map((session) => (
+                    <option key={session._id} value={session._id}>
+                      {session.title || "Untitled Session"} (ID: {session._id})
+                    </option>
+                  ))}
+                </select>
+                {errors.sessionId && (
+                  <p className="text-red-500 text-xs mt-1">{errors.sessionId.message}</p>
+                )}
+              </div>
 
-            {/* Title */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <FileText className="w-4 h-4 text-indigo-600" /> Title
-              </label>
-              <input
-                {...register("title", { required: "Title is required" })}
-                className={`w-full input input-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 ${errors.title ? "border-red-500" : ""}`}
-                placeholder="Enter Material Title"
-              />
-              {errors.title && (
-                <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
-              )}
-            </div>
+              {/* Title */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <FileText className="w-4 h-4 text-indigo-600" /> Title
+                </label>
+                <input
+                  {...register("title", { required: "Title is required" })}
+                  className={`w-full input input-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 ${errors.title ? "border-red-500" : ""}`}
+                  placeholder="Enter Material Title"
+                />
+                {errors.title && (
+                  <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>
+                )}
+              </div>
 
-            {/* Description */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <Text className="w-4 h-4 text-indigo-600" /> Description
-              </label>
-              <textarea
-                {...register("description")}
-                className="w-full textarea textarea-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
-                placeholder="Enter Description (Optional)"
-                rows="4"
-              />
-            </div>
+              {/* Description */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Text className="w-4 h-4 text-indigo-600" /> Description
+                </label>
+                <textarea
+                  {...register("description")}
+                  className="w-full textarea textarea-bordered bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300"
+                  placeholder="Enter Description (Optional)"
+                  rows="4"
+                />
+              </div>
 
-            {/* Tutor Email */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <Mail className="w-4 h-4 text-indigo-600" /> Tutor Email
-              </label>
-              <input
-                type="email"
-                value={user?.email || "No email available"}
-                readOnly
-                className="w-full input input-bordered bg-gray-100 cursor-not-allowed text-gray-600"
-              />
-            </div>
+              {/* Tutor Email */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Mail className="w-4 h-4 text-indigo-600" /> Tutor Email
+                </label>
+                <input
+                  type="email"
+                  value={user?.email || "No email available"}
+                  readOnly
+                  className="w-full input input-bordered bg-gray-100 cursor-not-allowed text-gray-600"
+                />
+              </div>
 
-            {/* File Upload */}
-            <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <Upload className="w-4 h-4 text-indigo-600" /> Upload File
-              </label>
-              <input
-                type="file"
-                {...register("file", { required: "File is required" })}
-                accept=".pdf,image/*"
-                className={`file-input file-input-bordered w-full bg-white ${errors.file ? "border-red-500" : ""}`}
-              />
-              {errors.file && (
-                <p className="text-red-500 text-xs mt-1">{errors.file.message}</p>
-              )}
-            </div>
+              {/* File Upload */}
+              <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+                  <Upload className="w-4 h-4 text-indigo-600" /> Upload File
+                </label>
+                <input
+                  type="file"
+                  {...register("file", { required: "File is required" })}
+                  accept=".pdf,image/*"
+                  className={`file-input file-input-bordered w-full bg-white ${errors.file ? "border-red-500" : ""}`}
+                />
+                {errors.file && (
+                  <p className="text-red-500 text-xs mt-1">{errors.file.message}</p>
+                )}
+              </div>
 
-            {/* Submit Button */}
-            <motion.button
-              type="submit"
-              disabled={isSubmitting}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`btn w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center justify-center gap-2 ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" /> Upload Material
-                </>
-              )}
-            </motion.button>
-          </form>
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                disabled={isSubmitting || sessions.length === 0}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`btn w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center justify-center gap-2 ${isSubmitting || sessions.length === 0 ? "opacity-70 cursor-not-allowed" : ""}`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" /> Upload Material
+                  </>
+                )}
+              </motion.button>
+            </form>
+          )}
         </motion.div>
       </div>
     </div>

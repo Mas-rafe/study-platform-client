@@ -67,8 +67,8 @@ const Navbar = () => {
     <>
       <li><NavLink to="/" className={linkClass} end>Home</NavLink></li>
       <li><NavLink to="/study-sessions" className={linkClass}>Study Sessions</NavLink></li>
-      <li><NavLink to="/tutors" className={linkClass}>Tutors</NavLink></li>
-      <li><NavLink to="/about" className={linkClass}>About</NavLink></li>
+      {/* <li><NavLink to="/tutors" className={linkClass}>Tutors</NavLink></li>
+      <li><NavLink to="/about" className={linkClass}>About</NavLink></li> */}
       {user && <li><NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink></li>}
     </>
   );

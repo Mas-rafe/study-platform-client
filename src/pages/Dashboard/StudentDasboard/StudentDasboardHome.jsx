@@ -1,211 +1,316 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-
-
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
-import { Button } from "../../../Components/UI/button";
-import { Link } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Book, Star, FileText, Link, Download, Loader2, AlertCircle } from "lucide-react";
+
 
 const StudentDashboardHome = () => {
   const axiosSecure = useAxiosSecure();
-  const { user, email } = UseAuth();
+  const { user } = UseAuth();
+  const [expandedSession, setExpandedSession] = useState(null); // Track expanded accordion
+  const [materialsForSession, setMaterialsForSession] = useState({});
+  const [materialsLoading, setMaterialsLoading] = useState({});
 
-  const [selectedSessionForMaterials, setSelectedSessionForMaterials] = useState(null);
-  const [materialsForSession, setMaterialsForSession] = useState([]);
-  const [materialsLoading, setMaterialsLoading] = useState(false);
-
-  // --- 1) Student stats
+  // Fetch student stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
-    queryKey: ["studentStats", email],
+    queryKey: ["studentStats", user?.email],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/student/stats/${email}`);
+      const res = await axiosSecure.get(`/student/stats/${user?.email}`);
       return res.data;
     },
-    enabled: !!email,
+    enabled: !!user?.email,
   });
 
-  // --- 2) Booked sessions (server returns booking + embedded session data)
-  const {
-    data: bookings = [],
-    isLoading: bookingsLoading,
-    refetch: refetchBookings,
-  } = useQuery({
-    queryKey: ["studentBookings", email],
+  // Fetch booked sessions
+  const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
+    queryKey: ["studentBookings", user?.email],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/bookings/student/${email}`);
+      const res = await axiosSecure.get(`/bookings/student/${user?.email}`);
       return res.data;
     },
-    enabled: !!email,
+    enabled: !!user?.email,
   });
 
-  // --- 3) Student notes
-  const {
-    data: notes = [],
-    isLoading: notesLoading,
-    refetch: refetchNotes,
-  } = useQuery({
-    queryKey: ["studentNotes", email],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/notes/student/${email}`);
-      return res.data;
-    },
-    enabled: !!email,
-  });
-
- 
-  // --- Request materials for a booked session
-  const viewMaterials = async (sessionId) => {
+  // Fetch materials for a session
+  const fetchMaterials = async (sessionId) => {
     if (!sessionId) return;
-    setMaterialsLoading(true);
-    setSelectedSessionForMaterials(sessionId);
+    setMaterialsLoading((prev) => ({ ...prev, [sessionId]: true }));
     try {
       const res = await axiosSecure.get(`/materials/session/${sessionId}`);
-      setMaterialsForSession(res.data || []);
+      setMaterialsForSession((prev) => ({ ...prev, [sessionId]: res.data || [] }));
     } catch (err) {
-      Swal.fire("Error", err.response?.data?.message || err.message, "error");
-      setMaterialsForSession([]);
+      Swal.fire({
+        icon: "error",
+        title: "Error!",
+        text: err.response?.data?.message || err.message,
+        customClass: { confirmButton: "btn btn-error bg-gradient-to-r from-red-500 to-rose-600 text-white" },
+      });
+      setMaterialsForSession((prev) => ({ ...prev, [sessionId]: [] }));
     } finally {
-      setMaterialsLoading(false);
+      setMaterialsLoading((prev) => ({ ...prev, [sessionId]: false }));
     }
   };
 
-  // --- helper: render loading states
-  if (statsLoading || bookingsLoading || notesLoading) {
-    return <p className="text-center p-6">Loading your dashboard...</p>;
+  // Toggle accordion
+  const toggleAccordion = (sessionId) => {
+    if (expandedSession === sessionId) {
+      setExpandedSession(null);
+    } else {
+      setExpandedSession(sessionId);
+      if (!materialsForSession[sessionId]) {
+        fetchMaterials(sessionId);
+      }
+    }
+  };
+
+  // Format date with fallback
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  // Loading state
+  if (statsLoading || bookingsLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Loader2 className="w-16 h-16 text-indigo-600" />
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Welcome, {user?.displayName || "Student"}</h1>
-          <p className="text-sm text-gray-500">Overview of your bookings, notes and materials.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={() => window.scrollTo({ top: 9999, behavior: "smooth" })}>Create Note</Button>
-          <Button onClick={() => document.getElementById("my-notes-section")?.scrollIntoView({ behavior: "smooth" })}>My Notes</Button>
-        </div>
-      </header>
-
-      {/* Stats */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-xl shadow">
-          <div className="text-sm text-gray-500">Bookings</div>
-          <div className="text-2xl font-bold">{stats?.totalBookings ?? 0}</div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
-          <div className="text-sm text-gray-500">Reviews Given</div>
-          <div className="text-2xl font-bold">{stats?.totalReviews ?? 0}</div>
-        </div>
-        <div className="bg-white p-4 rounded-xl shadow">
-          <div className="text-sm text-gray-500">Materials Available</div>
-          <div className="text-2xl font-bold">{stats?.totalMaterials ?? 0}</div>
-        </div>
-      </section>
-
-      {/* Booked sessions */}
-      <section className="bg-white p-4 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-2">Your Booked Sessions</h2>
-        {bookings.length === 0 ? (
-          <p className="text-gray-500">You have no bookings yet.</p>
-        ) : (
-          <div className="space-y-3">
-            {bookings.map((b) => {
-              // backend should embed session info into booking as `session`
-              const session = b.session || b.sessionData || (b.sessionId ? { _id: b.sessionId, title: b.title } : null);
-              const sessionId = session?._id?.toString?.() ?? b.sessionId;
-              return (
-                <div key={b._id} className="border p-4 rounded-md flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <div>
-                    <div className="font-semibold">{session?.title || "Unknown Session"}</div>
-                    <div className="text-sm text-gray-500">
-                      Tutor: {session?.tutorName || b.tutorEmail} • Fee: {session?.registrationFee === 0 ? "Free" : `$${session?.registrationFee}`}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      Reg: {session?.registrationStart ? new Date(session.registrationStart).toLocaleDateString() : "N/A"} →
-                      {session?.registrationEnd ? " " + new Date(session.registrationEnd).toLocaleDateString() : " N/A"}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Link to={`/dashboard/student/bookings/${session._id}`}>
-                      <button className="btn btn-sm bg-blue-500 text-white rounded-md">
-                        View Details
-                      </button>
-                    </Link>
-                    <Link to={`/dashboard/student/bookings/${sessionId}/materials`}>
-                      <button className="btn btn-primary btn-sm">
-                        View Materials
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+      <div className="max-w-6xl mx-auto space-y-12">
+        {/* === HEADER === */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
+          className="relative"
+        >
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-3xl opacity-20 rounded-2xl"></div>
           </div>
-        )}
-      </section>
-
-      {/* Materials modal-like section */}
-      {selectedSessionForMaterials && (
-        <section className="bg-white p-4 rounded-xl shadow">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold">Materials for session: {selectedSessionForMaterials}</h3>
-            <button className="btn btn-ghost" onClick={() => { setSelectedSessionForMaterials(null); setMaterialsForSession([]); }}>
-              Close
-            </button>
-          </div>
-
-          {materialsLoading ? (
-            <p>Loading materials...</p>
-          ) : materialsForSession.length === 0 ? (
-            <p className="text-gray-500">No materials available for this session.</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {materialsForSession.map((m) => (
-                <div key={m._id} className="p-3 border rounded">
-                  <div className="font-semibold">{m.title}</div>
-                  <div className="text-sm text-gray-600 mb-2">{m.description}</div>
-
-                  {/* show image if exists */}
-                  {m.image && (
-                    <div className="mb-2">
-                      <img src={m.image} alt={m.title} className="w-full rounded" />
-                      <a href={m.image} target="_blank" rel="noreferrer" download className="btn btn-outline btn-xs mt-2">Download</a>
-                    </div>
-                  )}
-
-                  {/* link */}
-                  {m.link && (
-                    <div className="mt-2">
-                      <a href={m.link} target="_blank" rel="noreferrer" className="text-blue-600 underline">
-                        Open resource link
-                      </a>
-                    </div>
-                  )}
-
-                  {/* fileUrl (server-stored file) */}
-                  {m.fileUrl && (
-                    <div className="mt-2">
-                      <a href={m.fileUrl} target="_blank" rel="noreferrer" className="btn btn-sm">
-                        Open File
-                      </a>
-                      <a href={m.fileUrl} download className="btn btn-sm btn-outline ml-2">
-                        Download
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+                Welcome, {user?.displayName || "Student"}
+              </h1>
+              <p className="text-lg text-gray-600 mt-2">Explore your bookings and study materials</p>
             </div>
-          )}
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => window.scrollTo({ top: 9999, behavior: "smooth" })}
+                className="btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-2"
+              >
+                <FileText className="w-4 h-4" /> Create Note
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => document.getElementById("my-notes-section")?.scrollIntoView({ behavior: "smooth" })}
+                className="btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-2"
+              >
+                <Book className="w-4 h-4" /> My Notes
+              </motion.button>
+            </div>
+          </div>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: "120px" }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"
+          />
+        </motion.header>
+
+        {/* === STATS === */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {[
+            { icon: Book, label: "Bookings", value: stats?.totalBookings ?? 0 },
+            { icon: Star, label: "Reviews Given", value: stats?.totalReviews ?? 0 },
+            { icon: FileText, label: "Materials Available", value: stats?.totalMaterials ?? 0 },
+          ].map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.2 }}
+              whileHover={{ scale: 1.05 }}
+              className="bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-lg p-6 border border-indigo-100 text-center"
+            >
+              <div className="flex justify-center mb-2">
+                <stat.icon className="w-8 h-8 text-indigo-600" />
+              </div>
+              <div className="text-sm text-gray-600">{stat.label}</div>
+              <div className="text-2xl font-bold text-indigo-700">{stat.value}</div>
+            </motion.div>
+          ))}
         </section>
-      )}
 
-
-    
+        {/* === BOOKED SESSIONS WITH MATERIALS === */}
+        <section className="relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-lg p-6 border border-indigo-100"
+          >
+            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <Book className="w-6 h-6 text-indigo-600" /> Your Booked Sessions
+            </h2>
+            {bookings.length === 0 ? (
+              <div className="text-center py-8">
+                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-gray-500">You have no bookings yet.</p>
+              </div>
+            ) : (
+              <div className="relative space-y-6">
+                {/* Timeline Line */}
+                <div className="absolute left-4 md:left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500"></div>
+                {bookings.map((b, idx) => {
+                  const session = b.session || b.sessionData || (b.sessionId ? { _id: b.sessionId, title: b.title } : null);
+                  const sessionId = session?._id?.toString?.() ?? b.sessionId;
+                  return (
+                    <motion.div
+                      key={b._id}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="relative pl-12"
+                    >
+                      {/* Timeline Dot */}
+                      <div className="absolute left-2 md:left-4 top-4 w-4 h-4 bg-indigo-600 rounded-full border-2 border-white"></div>
+                      <div className="bg-white rounded-lg shadow-md p-4 border border-indigo-100">
+                        {/* Session Header */}
+                        <div
+                          className="flex items-center justify-between cursor-pointer"
+                          onClick={() => toggleAccordion(sessionId)}
+                        >
+                          <div className="font-semibold text-gray-800">{session?.title || "Unknown Session"}</div>
+                          <motion.div
+                            animate={{ rotate: expandedSession === sessionId ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </motion.div>
+                        </div>
+                        {/* Session Details */}
+                        <div className="text-sm text-gray-600 mt-2">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4" /> Tutor: {session?.tutorName || b.tutorEmail || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" /> Fee: {session?.registrationFee === 0 ? "Free" : `$${session?.registrationFee}` || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <FileText className="w-4 h-4" /> Reg: {formatDate(session?.registrationStart)} → {formatDate(session?.registrationEnd)}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <Link to={`/dashboard/student/bookings/${session?._id}`}>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="btn btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg flex items-center gap-1"
+                            >
+                              <FileText className="w-4 h-4" /> View Details
+                            </motion.button>
+                          </Link>
+                        </div>
+                        {/* Materials Accordion */}
+                        <AnimatePresence>
+                          {expandedSession === sessionId && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="mt-4 space-y-4"
+                            >
+                              {materialsLoading[sessionId] ? (
+                                <div className="flex justify-center py-4">
+                                  <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+                                </div>
+                              ) : materialsForSession[sessionId]?.length === 0 ? (
+                                <div className="text-center py-4">
+                                  <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                  <p className="text-gray-500">No materials available for this session.</p>
+                                </div>
+                              ) : (
+                                materialsForSession[sessionId]?.map((m) => (
+                                  <motion.div
+                                    key={m._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-gradient-to-br from-white to-indigo-50 rounded-lg p-4 border border-indigo-100"
+                                  >
+                                    <div className="font-semibold text-gray-800">{m.title || "Untitled"}</div>
+                                    <div className="text-sm text-gray-600 mb-2">{m.description || "No description"}</div>
+                                    {m.image && (
+                                      <div className="mb-2">
+                                        <img src={m.image} alt={m.title || "Untitled"} className="w-full h-32 rounded-md object-cover" />
+                                        <a
+                                          href={m.image}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          download
+                                          className="btn btn-sm btn-outline mt-2 flex items-center gap-1"
+                                        >
+                                          <Download className="w-4 h-4" /> Download Image
+                                        </a>
+                                      </div>
+                                    )}
+                                    {m.fileUrl && (
+                                      <div className="flex gap-2">
+                                        <a
+                                          href={m.fileUrl}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="btn btn-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-1"
+                                        >
+                                          <Link className="w-4 h-4" /> Open File
+                                        </a>
+                                        <a
+                                          href={m.fileUrl}
+                                          download
+                                          className="btn btn-sm btn-outline flex items-center gap-1"
+                                        >
+                                          <Download className="w-4 h-4" /> Download
+                                        </a>
+                                      </div>
+                                    )}
+                                  </motion.div>
+                                ))
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        </section>
+      </div>
     </div>
   );
 };
