@@ -17,7 +17,7 @@ const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState("student"); // 🔹 default role
+  const [role, setRole] = useState(null); // 🔹 default role
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 

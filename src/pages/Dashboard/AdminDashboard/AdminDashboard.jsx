@@ -186,44 +186,44 @@ const AdminDashboard = () => {
         </div>
 
         {/* === QUICK ACTIONS (STANDARD) === */}
-       <motion.section
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.8 }}
-  className="bg-white rounded-2xl shadow-lg p-6 md:p-8"
->
-  <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-    <TrendingUp className="text-indigo-600" />
-    Quick Navigation
-  </h2>
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-    {[
-      { label: "Users", icon: Users, color: "indigo", to: "/dashboard/manage-users" },
-      { label: "Sessions", icon: BookOpen, color: "green", to: "/dashboard/manage-sessions" },
-      { label: "Bookings", icon: Calendar, color: "blue", to: "/dashboard/manage-bookings" },
-      { label: "Reviews", icon: Star, color: "yellow", to: "/dashboard/manage-reviews" },
-    ].map((action, idx) => (
-      <motion.div
-        key={action.label}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: idx * 0.1 }}
-      >
-        <Link
-          to={action.to}
-          className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 border-${action.color}-200 bg-${action.color}-50 hover:bg-${action.color}-100 transition-all cursor-pointer group`}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="bg-white rounded-2xl shadow-lg p-6 md:p-8"
         >
-          <action.icon className={`w-9 h-9 text-${action.color}-600 mb-2 group-hover:scale-110 transition-transform`} />
-          <span className="text-sm font-semibold text-gray-700 group-hover:text-${action.color}-700 transition-colors">
-            {action.label}
-          </span>
-        </Link>
-      </motion.div>
-    ))}
-  </div>
-</motion.section>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <TrendingUp className="text-indigo-600" />
+            Quick Navigation
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Users", icon: Users, color: "indigo", to: "/dashboard/manage-users" },
+              { label: "Sessions", icon: BookOpen, color: "green", to: "/dashboard/manage-sessions" },
+              { label: "Bookings", icon: Calendar, color: "blue", to: "/dashboard/manage-bookings" },
+              { label: "Reviews", icon: Star, color: "yellow", to: "/dashboard/manage-reviews" },
+            ].map((action, idx) => (
+              <motion.div
+                key={action.label}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <Link
+                  to={action.to}
+                  className={`flex flex-col items-center justify-center p-5 rounded-xl border-2 border-${action.color}-200 bg-${action.color}-50 hover:bg-${action.color}-100 transition-all cursor-pointer group`}
+                >
+                  <action.icon className={`w-9 h-9 text-${action.color}-600 mb-2 group-hover:scale-110 transition-transform`} />
+                  <span className="text-sm font-semibold text-gray-700 group-hover:text-${action.color}-700 transition-colors">
+                    {action.label}
+                  </span>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
 
         {/* === RECENT ACTIVITY === */}
         <motion.section

@@ -15,29 +15,56 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      const result = await createUser(data.email, data.password);
+      // 1. Create Firebase user
+      await createUser(data.email, data.password);
 
+      // 2. Update Firebase profile
       await updateUserProfile({
         displayName: data.name,
         photoURL: data.photo,
       });
 
-      // ✅ Save user to DB
-      await axios.post("https://study-platform-server-ruddy.vercel.app/users", {
-        name: data.name,
-        email: data.email,
-        photo: data.photo,
-      });
+      // 3. Save user in MongoDB (role still sent, but backend controls final authority)
+      await axios.post(
+        "https://study-platform-server-ruddy.vercel.app/users",
+        {
+          name: data.name,
+          email: data.email,
+          photo: data.photo,
+          role: data.role || "student",
+        }
+      );
 
-      // ✅ Get JWT token
-      const res = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
-        email: data.email,
-      });
+      // 4. Get JWT token
+      const res = await axios.post(
+        "https://study-platform-server-ruddy.vercel.app/jwt",
+        {
+          email: data.email,
+        }
+      );
+
       localStorage.setItem("access-token", res.data.token);
 
+      // 5. IMPORTANT FIX: Fetch actual user role from DB
+      const userRes = await axios.get(
+        `https://study-platform-server-ruddy.vercel.app/users/${data.email}`
+      );
+
+      const userRole = userRes.data?.role || "student";
+
+      // store role globally for dashboard routing
+      localStorage.setItem("user-role", userRole);
+
       Swal.fire("Success!", "Account created successfully", "success");
-      navigate("/");
+
+      // 6. Redirect based on role (fixes wrong dashboard issue)
+      if (userRole === "tutor") {
+        navigate("/dashboard/tutor");
+      } else {
+        navigate("/dashboard/student");
+      }
     } catch (err) {
+      console.error(err);
       Swal.fire("Error", err.message, "error");
     }
   };
@@ -45,9 +72,13 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-base-200">
       <div className="card w-full max-w-md shadow-2xl bg-base-100">
-        <form onSubmit={handleSubmit(onSubmit)} className="card-body space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="card-body space-y-4"
+        >
           <h2 className="text-2xl font-bold text-center">Register</h2>
 
+          {/* Name */}
           <div>
             <label className="label">Name</label>
             <input
@@ -59,6 +90,7 @@ const Register = () => {
             />
           </div>
 
+          {/* Photo */}
           <div>
             <label className="label">Photo URL</label>
             <input
@@ -69,6 +101,7 @@ const Register = () => {
             />
           </div>
 
+          {/* Email */}
           <div>
             <label className="label">Email</label>
             <input
@@ -80,6 +113,21 @@ const Register = () => {
             />
           </div>
 
+          {/* Role */}
+          <div>
+            <label className="label">Select Role</label>
+            <select
+              {...register("role")}
+              className="select select-bordered w-full"
+              required
+            >
+              <option value="">Select your role</option>
+              <option value="student">Student</option>
+              <option value="tutor">Tutor</option>
+            </select>
+          </div>
+
+          {/* Password */}
           <div>
             <label className="label">Password</label>
             <div className="relative">
@@ -100,8 +148,9 @@ const Register = () => {
           </div>
 
           <button className="btn btn-primary w-full">Register</button>
-          {/* Social login component */}
+
           <SocialLogin />
+
           <p className="text-center">
             Already have an account?{" "}
             <Link to="/login" className="link link-primary">

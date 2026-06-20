@@ -129,9 +129,8 @@ const Home = () => {
                         onError={(e) => (e.target.src = "https://via.placeholder.com/400x200?text=No+Image")}
                       />
                       <div className="absolute top-2 right-2">
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          isOngoing ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                        }`}>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${isOngoing ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}>
                           {isOngoing ? "Ongoing" : "Closed"}
                         </span>
                       </div>

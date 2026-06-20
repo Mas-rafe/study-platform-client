@@ -12,7 +12,7 @@ const AdminRoute = ({ children }) => {
     return children;
   }
 
-  // Redirect non-admins to homepage (or safe page)
+  // Redirect non-admins to homepage 
   return <Navigate to="/" state={{ from: location }} replace />;
 };
 

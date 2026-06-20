@@ -11,7 +11,7 @@ import StudySessionsForm from "../pages/Dashboard/StudySessionsForm/StudySession
 import AdminDashboard from "../pages/Dashboard/AdminDashboard/AdminDashboard";
 import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";
-import StudentDashboard from "../pages/Dashboard/StudentDasboard/StudentDasboardHome";
+import StudentDashboard from "../pages/Dashboard/StudentDashboard/StudentDashboardHome";
 import ManageUsers from "../pages/Dashboard/AdminDashboard/ManageUsers";
 
 import SessionDetails from "../pages/StudySessionsPage/SessionDetails/SessionDetails";
@@ -20,27 +20,30 @@ import ManageReviews from "../pages/Dashboard/AdminDashboard/ManageReviews";
 
 
 import ManageMaterials from "../pages/Dashboard/AdminDashboard/ManageMaterials";
-import StudentMaterials from "../pages/Dashboard/StudentDasboard/StudentMaterial";
+import StudentMaterials from "../pages/Dashboard/StudentDashboard/StudentMaterial";
 import MySessions from "../pages/Dashboard/TutorDashboard/TutorSessions/MySessions";
 import AddMaterial from "../pages/Dashboard/TutorDashboard/AddMaterial/AddMaterial";
 import MyUploadedMaterials from "../pages/Dashboard/TutorDashboard/MyUploadedMaterial/MyUploadedMaterial";
 import TutorDashboardHome from "../pages/Dashboard/TutorDashboard/TutorHome/TutorDashboardHome";
-import StudentDashboardHome from "../pages/Dashboard/StudentDasboard/StudentDasboardHome";
-import StudentBookedSessionDetails from "../pages/Dashboard/StudentDasboard/StudentBookedSessionDetails";
-import StudentBookedSessionMaterials from "../pages/Dashboard/StudentDasboard/StudentBookedSessionMaterials";
-import MyBookings from "../pages/Dashboard/StudentDasboard/MyBooking";
-import CreateNote from "../pages/Dashboard/StudentDasboard/CreateNote";
-import MyNotes from "../pages/Dashboard/StudentDasboard/MyNotes";
+import StudentDashboardHome from "../pages/Dashboard/StudentDashboard/StudentDashboardHome";
+import StudentBookedSessionDetails from "../pages/Dashboard/StudentDashboard/StudentBookedSessionDetails";
+import StudentBookedSessionMaterials from "../pages/Dashboard/StudentDashboard/StudentBookedSessionMaterials";
+import MyBookings from "../pages/Dashboard/StudentDashboard/MyBooking";
+import CreateNote from "../pages/Dashboard/StudentDashboard/CreateNote";
+import MyNotes from "../pages/Dashboard/StudentDashboard/MyNotes";
 import PrivateRoute from "../Routes/PrivateRoute";
 import ManageBookings from "../pages/Dashboard/AdminDashboard/ManageBookings";
+import StudentProfile from "../pages/Dashboard/StudentDashboard/StudentProfile";
 
 const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
     children: [
-      { index: true,
-         Component: Home },
+      {
+        index: true,
+        Component: Home
+      },
       { path: "login", Component: Login },
       { path: "register", Component: Register },
       {
@@ -50,16 +53,16 @@ const router = createBrowserRouter([
       {
 
         path: "session-details/:id",
-       element: <PrivateRoute>
+        element: <PrivateRoute>
           <SessionDetails></SessionDetails>
-       </PrivateRoute>
+        </PrivateRoute>
       },
       {
         path: "dashboard",
         element: <PrivateRoute>
-          
+
           <DashboardLayout></DashboardLayout>
-         
+
         </PrivateRoute>,
         children: [
           // Student
@@ -92,6 +95,10 @@ const router = createBrowserRouter([
             path: "/dashboard/student/bookings/:id/materials",
             Component: StudentBookedSessionMaterials
           }, // replace with MyNotes
+          {
+            path: "user-profile",
+            Component: StudentProfile
+          },
 
           // Tutor
           {
@@ -128,7 +135,8 @@ const router = createBrowserRouter([
               <ManageSessions />
             </AdminRoute>)
           },
-          {  path: "manage-bookings",
+          {
+            path: "manage-bookings",
             element: (<AdminRoute>
               <ManageBookings />
             </AdminRoute>)

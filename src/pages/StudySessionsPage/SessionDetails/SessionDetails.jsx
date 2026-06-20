@@ -34,7 +34,7 @@ const StarRating = ({ rating, size = 16 }) => (
 
 const SessionDetails = () => {
   const { id } = useParams();
-  const axiosSecure = useAxiosSecure();
+  const axiosSecure = useAxiosSecure(); 
   const { role, email, user } = UseAuth();
 
   // Fetch Session
