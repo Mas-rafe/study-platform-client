@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router";
 
 const BannerCarousel = () => {
   // ✅ Array of slides with image, title, and subtitle
@@ -67,9 +68,12 @@ const BannerCarousel = () => {
                 {slides[current].title}
               </h1>
               <p className="text-lg md:text-xl mb-6">{slides[current].subtitle}</p>
+              <Link to="/study-sessions" >
               <a href="/sessions" className="btn btn-primary">
                 Explore Sessions
               </a>
+              </Link>
+              
             </motion.div>
           </div>
         </motion.div>
