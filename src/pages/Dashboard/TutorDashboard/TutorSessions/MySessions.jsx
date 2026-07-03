@@ -3,14 +3,26 @@ import Swal from "sweetalert2";
 import UseAuth from "../../../../Hooks/UseAuth";
 import useAxiosSecure from "../../../../Hooks/UseAxiosSecure";
 import { motion } from "framer-motion";
-import { CheckCircle, XCircle, Clock, DollarSign, AlertCircle, Calendar } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  DollarSign,
+  AlertCircle,
+  Calendar,
+} from "lucide-react";
 
 const MySessions = () => {
   const { user } = UseAuth();
   const axiosSecure = useAxiosSecure();
 
   // Fetch tutor sessions
-  const { data: sessions = [], refetch, isLoading, error } = useQuery({
+  const {
+    data: sessions = [],
+    refetch,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["tutor-sessions", user?.email],
     queryFn: async () => {
       const { data } = await axiosSecure.get(`/sessions/tutor/${user?.email}`);
@@ -23,14 +35,19 @@ const MySessions = () => {
   const handleResubmit = async (id) => {
     try {
       const { data } = await axiosSecure.patch(`/sessions/${id}/resubmit`);
+
       if (data.modifiedCount > 0) {
         Swal.fire({
           icon: "success",
           title: "Resubmitted!",
           text: "Your session is pending approval again.",
-          customClass: { confirmButton: "btn btn-success bg-gradient-to-r from-green-500 to-emerald-600 text-white" },
+          customClass: {
+            confirmButton:
+              "btn btn-success bg-gradient-to-r from-green-500 to-emerald-600 text-white",
+          },
           timer: 2000,
         });
+
         refetch();
       }
     } catch (error) {
@@ -38,7 +55,10 @@ const MySessions = () => {
         icon: "error",
         title: "Error!",
         text: error.response?.data?.message || "Failed to resubmit session.",
-        customClass: { confirmButton: "btn btn-error bg-gradient-to-r from-red-500 to-rose-600 text-white" },
+        customClass: {
+          confirmButton:
+            "btn btn-error bg-gradient-to-r from-red-500 to-rose-600 text-white",
+        },
       });
     }
   };
@@ -46,6 +66,7 @@ const MySessions = () => {
   // Format dates with fallback
   const formatDate = (date) => {
     if (!date) return "N/A";
+
     return new Date(date).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -62,18 +83,21 @@ const MySessions = () => {
             <CheckCircle className="w-3 h-3" /> Approved
           </span>
         );
+
       case "rejected":
         return (
           <span className="badge badge-error badge-lg font-medium flex items-center gap-1">
             <XCircle className="w-3 h-3" /> Rejected
           </span>
         );
+
       case "pending":
         return (
           <span className="badge badge-warning badge-lg font-medium flex items-center gap-1">
             <Clock className="w-3 h-3" /> Pending
           </span>
         );
+
       default:
         return <span className="badge badge-ghost">Unknown</span>;
     }
@@ -81,12 +105,12 @@ const MySessions = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="flex justify-center items-center min-h-screen bg-base-200 text-base-content">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         >
-          <div className="w-16 h-16 border-4 border-indigo-400 border-t-transparent rounded-full"></div>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full"></div>
         </motion.div>
       </div>
     );
@@ -94,7 +118,7 @@ const MySessions = () => {
 
   if (error) {
     return (
-      <div className="text-center py-16 text-red-500 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="text-center py-16 text-error bg-base-200 min-h-screen">
         <AlertCircle className="w-16 h-16 mx-auto mb-4" />
         <p>Error loading sessions: {error.message}</p>
       </div>
@@ -102,7 +126,7 @@ const MySessions = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+    <div className="min-h-screen bg-base-200 text-base-content py-8 px-4 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* === HEADER === */}
         <motion.div
@@ -114,10 +138,15 @@ const MySessions = () => {
           <div className="absolute inset-0 -z-10">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-3xl opacity-20 rounded-2xl"></div>
           </div>
+
           <h2 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
             My Study Sessions
           </h2>
-          <p className="text-lg text-gray-600 mt-2">Manage your created study sessions</p>
+
+          <p className="text-lg text-base-content/70 mt-2">
+            Manage your created study sessions
+          </p>
+
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "120px" }}
@@ -132,10 +161,10 @@ const MySessions = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-center py-16 bg-white rounded-2xl shadow-lg"
+            className="text-center py-16 bg-base-100 text-base-content rounded-2xl shadow-lg border border-base-300"
           >
-            <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No sessions found.</p>
+            <AlertCircle className="w-16 h-16 text-base-content/40 mx-auto mb-4" />
+            <p className="text-base-content/60 text-lg">No sessions found.</p>
           </motion.div>
         ) : (
           <>
@@ -144,11 +173,12 @@ const MySessions = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="hidden md:block bg-white rounded-2xl shadow-lg overflow-hidden"
+              className="hidden md:block bg-base-100 text-base-content rounded-2xl shadow-lg overflow-hidden border border-base-300"
             >
-              <div className="flex justify-end p-1 bg-gradient-to-r from-indigo-50 to-purple-50">
-                <div className="w-16 h-1 bg-indigo-300 rounded-full animate-pulse"></div>
+              <div className="flex justify-end p-1 bg-base-200">
+                <div className="w-16 h-1 bg-indigo-400 rounded-full animate-pulse"></div>
               </div>
+
               <div className="overflow-x-auto">
                 <table className="table w-full">
                   <thead>
@@ -162,6 +192,7 @@ const MySessions = () => {
                       <th className="text-center">Action</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {sessions.map((session, idx) => (
                       <motion.tr
@@ -169,60 +200,90 @@ const MySessions = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="hover:bg-indigo-50 transition-colors border-b"
+                        className="hover:bg-base-200 transition-colors border-b border-base-300"
                       >
                         <td className="font-medium">{idx + 1}</td>
+
                         <td>
                           <div className="flex items-center gap-3">
                             {session.image ? (
-                              <img src={session.image} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                              <img
+                                src={session.image}
+                                alt=""
+                                className="w-10 h-10 rounded-lg object-cover"
+                              />
                             ) : (
-                              <div className="bg-gray-200 border-2 border-dashed rounded-lg w-10 h-10 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              <div className="bg-base-200 border-2 border-dashed border-base-300 rounded-lg w-10 h-10 flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-base-content/40"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={1.5}
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  />
                                 </svg>
                               </div>
                             )}
-                            <span className="font-semibold text-gray-800 max-w-xs truncate" title={session.title || "Untitled"}>
+
+                            <span
+                              className="font-semibold text-base-content max-w-xs truncate"
+                              title={session.title || "Untitled"}
+                            >
                               {session.title || "Untitled"}
                             </span>
                           </div>
                         </td>
+
                         <td>{getStatusBadge(session.status || "pending")}</td>
+
                         <td className="text-center">
                           {session.registrationFee > 0 ? (
                             <span className="flex items-center justify-center gap-1">
-                              <DollarSign className="w-4 h-4 text-indigo-600" /> ${session.registrationFee}
+                              <DollarSign className="w-4 h-4 text-indigo-600" /> $
+                              {session.registrationFee}
                             </span>
                           ) : (
                             "Free"
                           )}
                         </td>
+
                         <td className="text-center">
                           {session.duration ? `${session.duration} hrs` : "N/A"}
                         </td>
-                        <td className="text-center text-sm">
+
+                        <td className="text-center text-sm text-base-content/80">
                           <div className="flex flex-col gap-1">
                             <p className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> Reg: {formatDate(session.registrationStart)} → {formatDate(session.registrationEnd)}
+                              <Calendar className="w-3 h-3" /> Reg:{" "}
+                              {formatDate(session.registrationStart)} →{" "}
+                              {formatDate(session.registrationEnd)}
                             </p>
+
                             <p className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> Class: {formatDate(session.classStart)} → {formatDate(session.classEnd)}
+                              <Calendar className="w-3 h-3" /> Class:{" "}
+                              {formatDate(session.classStart)} →{" "}
+                              {formatDate(session.classEnd)}
                             </p>
                           </div>
                         </td>
+
                         <td className="text-center">
                           {session.status === "rejected" ? (
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={() => handleResubmit(session._id)}
-                              className="btn btn-sm bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg flex items-center gap-1"
+                              className="btn btn-sm bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg flex items-center gap-1 border-0"
                             >
                               <Clock className="w-4 h-4" /> Resubmit
                             </motion.button>
                           ) : (
-                            <span className="text-sm text-gray-400">—</span>
+                            <span className="text-sm text-base-content/40">—</span>
                           )}
                         </td>
                       </motion.tr>
@@ -230,8 +291,9 @@ const MySessions = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="flex justify-start p-1 bg-gradient-to-r from-purple-50 to-indigo-50">
-                <div className="w-16 h-1 bg-purple-300 rounded-full animate-pulse"></div>
+
+              <div className="flex justify-start p-1 bg-base-200">
+                <div className="w-16 h-1 bg-purple-400 rounded-full animate-pulse"></div>
               </div>
             </motion.div>
 
@@ -245,11 +307,12 @@ const MySessions = () => {
                   transition={{ delay: idx * 0.1 }}
                   whileHover={{
                     y: -10,
-                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    boxShadow:
+                      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                   }}
-                  className="bg-gradient-to-br from-white to-indigo-50 rounded-xl overflow-hidden shadow-md border border-indigo-100"
+                  className="bg-base-100 text-base-content rounded-xl overflow-hidden shadow-md border border-base-300"
                 >
-                  <div className="h-48 bg-gray-200 border-2 border-dashed border-gray-300 overflow-hidden">
+                  <div className="h-48 bg-base-200 border-2 border-dashed border-base-300 overflow-hidden">
                     {session.image ? (
                       <img
                         src={session.image}
@@ -257,40 +320,72 @@ const MySessions = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <div className="flex items-center justify-center h-full text-base-content/40">
+                        <svg
+                          className="w-16 h-16"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                       </div>
                     )}
                   </div>
+
                   <div className="p-5 space-y-3">
-                    <h3 className="font-bold text-lg text-gray-800 line-clamp-1" title={session.title || "Untitled"}>
+                    <h3
+                      className="font-bold text-lg text-base-content line-clamp-1"
+                      title={session.title || "Untitled"}
+                    >
                       {session.title || "Untitled"}
                     </h3>
-                    <div className="flex items-center gap-2">{getStatusBadge(session.status || "pending")}</div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(session.status || "pending")}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-base-content/70">
                       <DollarSign className="w-4 h-4" />
-                      <span>{session.registrationFee > 0 ? `$${session.registrationFee}` : "Free"}</span>
+                      <span>
+                        {session.registrationFee > 0
+                          ? `$${session.registrationFee}`
+                          : "Free"}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+
+                    <div className="flex items-center gap-2 text-sm text-base-content/70">
                       <Clock className="w-4 h-4" />
-                      <span>{session.duration ? `${session.duration} hrs` : "N/A"}</span>
+                      <span>
+                        {session.duration ? `${session.duration} hrs` : "N/A"}
+                      </span>
                     </div>
-                    <div className="text-sm text-gray-600">
+
+                    <div className="text-sm text-base-content/70">
                       <p className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" /> Reg: {formatDate(session.registrationStart)} → {formatDate(session.registrationEnd)}
+                        <Calendar className="w-4 h-4" /> Reg:{" "}
+                        {formatDate(session.registrationStart)} →{" "}
+                        {formatDate(session.registrationEnd)}
                       </p>
+
                       <p className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" /> Class: {formatDate(session.classStart)} → {formatDate(session.classEnd)}
+                        <Calendar className="w-4 h-4" /> Class:{" "}
+                        {formatDate(session.classStart)} →{" "}
+                        {formatDate(session.classEnd)}
                       </p>
                     </div>
+
                     {session.status === "rejected" && (
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleResubmit(session._id)}
-                        className="btn btn-sm bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg w-full flex items-center justify-center gap-1"
+                        className="btn btn-sm bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg w-full flex items-center justify-center gap-1 border-0"
                       >
                         <Clock className="w-4 h-4" /> Resubmit
                       </motion.button>

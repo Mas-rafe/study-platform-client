@@ -7,7 +7,7 @@ import StudySessionsPage from "../pages/StudySessionsPage/StudySessionsPage";
 import DashboardLayout from "../Layouts/DashboardLayout";
 
 import TutorDashboard from "../pages/Dashboard/TutorDashboard/TutorDashboard";
-import StudySessionsForm from "../pages/Dashboard/StudySessionsForm/StudySessionsForm";
+import StudySessionsForm from "../pages/Dashboard/TutorDashboard/StudySessionsForm/StudySessionsForm";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard/AdminDashboard";
 import ManageSessions from "../pages/Dashboard/AdminDashboard/ManageSessions";
 import { createBrowserRouter } from "react-router";

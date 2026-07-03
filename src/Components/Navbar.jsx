@@ -11,11 +11,11 @@ const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // এই দুটো ref যোগ করুন
+  // refs
   const mobileMenuRef = useRef(null);
   const hamburgerRef = useRef(null);
 
-  // হ্যামবার্গার মেনু বন্ধ করার জন্য
+  //for off-on hamberg menu
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (

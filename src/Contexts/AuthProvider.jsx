@@ -12,14 +12,20 @@ import {
 import { auth } from '../Firebase/firebase.init';
 import axios from 'axios';
 
-
 const googleProvider = new GoogleAuthProvider();
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null); // 🔹 default role
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+
+  // Theme initial value
+  const [darkMode, setDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    return savedTheme === "dark" || (!savedTheme && prefersDark);
+  });
 
   const createUser = (email, password) => {
     setLoading(true);
@@ -45,82 +51,80 @@ const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
-  // 🔹 Listen for auth changes
- useEffect(() => {
-  // Theme: Load first — before auth
-  const savedTheme = localStorage.getItem("theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  // Theme apply effect
+  useEffect(() => {
+    const theme = darkMode ? "dark" : "light";
 
-  if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
-    setDarkMode(true);
-    document.documentElement.classList.add("dark");
-  } else {
-    setDarkMode(false);
-    document.documentElement.classList.remove("dark");
-  }
+    // DaisyUI theme
+    document.documentElement.setAttribute("data-theme", theme);
+
+    // Tailwind dark: class
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    // Save theme
+    localStorage.setItem("theme", theme);
+  }, [darkMode]);
 
   // Auth listener
-  const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
-    setUser(currentUser);
+  useEffect(() => {
+    const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
 
-    if (currentUser?.email) {
-      try {
-        const res = await axios.get(
-          `https://study-platform-server-ruddy.vercel.app/users/${currentUser.email}`
-        );
-        setRole(res.data?.role || "student");
+      if (currentUser?.email) {
+        try {
+          const res = await axios.get(
+            `https://study-platform-server-ruddy.vercel.app/users/${currentUser.email}`
+          );
 
-        const jwtRes = await axios.post("https://study-platform-server-ruddy.vercel.app/jwt", {
-          email: currentUser.email,
-        });
+          setRole(res.data?.role || "student");
 
-        if (jwtRes.data?.token) {
-          localStorage.setItem("access-token", jwtRes.data.token);
+          const jwtRes = await axios.post(
+            "https://study-platform-server-ruddy.vercel.app/jwt",
+            {
+              email: currentUser.email,
+            }
+          );
+
+          if (jwtRes.data?.token) {
+            localStorage.setItem("access-token", jwtRes.data.token);
+          }
+        } catch (err) {
+          console.error("AuthProvider error:", err);
+          setRole("student");
+          localStorage.removeItem("access-token");
         }
-      } catch (err) {
-        console.error("AuthProvider error:", err);
+      } else {
         setRole("student");
         localStorage.removeItem("access-token");
       }
-    } else {
-      setRole("student");
-      localStorage.removeItem("access-token");
-    }
 
-    setLoading(false);
-  });
+      setLoading(false);
+    });
 
-  return () => {
-    unSubscribe();
+    return () => {
+      unSubscribe();
+    };
+  }, []);
+
+  const toggleTheme = () => {
+    setDarkMode((prev) => !prev);
   };
-}, []);
-
-// toggleTheme — আপনার লজিক ১০০% সঠিক
-const toggleTheme = () => {
-  setDarkMode((prev) => {
-    const newMode = !prev;
-    if (newMode) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-    return newMode;
-  });
-};
 
   const authInfo = {
     user,
     email: user?.email || null,
-    role,   // 🔹 Now available everywhere
+    role,
     loading,
     createUser,
     signIn,
     updateUserProfile,
     logOut,
     signInWithGoogle,
-   darkMode,
+    darkMode,
     toggleTheme
   };
 
