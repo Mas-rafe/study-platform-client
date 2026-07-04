@@ -66,6 +66,11 @@ const DashboardLayout = () => {
                   <FaFolderOpen /> Study Materials
                 </Link>
               </li>
+              <li>
+                <Link to="/dashboard/user-profile">
+                  <FaFolderOpen /> User Profile
+                </Link>
+              </li>
             </>
           )}
 
