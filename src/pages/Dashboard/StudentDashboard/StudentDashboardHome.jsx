@@ -1,22 +1,422 @@
-
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link as RouterLink } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../../Hooks/UseAxiosSecure";
 import UseAuth from "../../../Hooks/UseAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Book, Star, FileText, Link, Download, Loader2, AlertCircle } from "lucide-react";
+import {
+  User,
+  BookOpen,
+  Star,
+  FileText,
+  Download,
+  Loader2,
+  AlertCircle,
+  Image as ImageIcon,
+  Calendar,
+  ChevronDown,
+  Eye,
+  NotebookPen,
+  FolderOpen,
+  ExternalLink,
+  Sparkles,
+  Layers,
+  CheckCircle,
+  DollarSign,
+  Clock,
+} from "lucide-react";
 
+const placeholderImage = "https://via.placeholder.com/700x350?text=No+Image";
+
+const normalizeId = (id) => {
+  return id ? String(id) : "";
+};
+
+const formatDate = (date) => {
+  if (!date) return "N/A";
+
+  try {
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return "N/A";
+  }
+};
+
+const formatFee = (session) => {
+  const fee = session?.registrationFee ?? session?.fee;
+
+  if (fee === undefined || fee === null) return "N/A";
+  if (Number(fee) === 0) return "Free";
+
+  return `$${fee}`;
+};
+
+const getSessionFromBooking = (booking) => {
+  const session = booking.session || booking.sessionData || {};
+
+  return {
+    ...session,
+    _id: session._id || booking.sessionId,
+    title: session.title || booking.title || "Untitled Session",
+    description:
+      session.description ||
+      booking.description ||
+      "No description available for this session.",
+    image: session.image || session.imageUrl || booking.image || "",
+    tutorName: session.tutorName || booking.tutorName || "",
+    tutorEmail: session.tutorEmail || booking.tutorEmail || "",
+    registrationFee: session.registrationFee ?? booking.registrationFee,
+    registrationStart: session.registrationStart || booking.registrationStart,
+    registrationEnd: session.registrationEnd || booking.registrationEnd,
+    classStart: session.classStart || booking.classStart,
+    classEnd: session.classEnd || booking.classEnd,
+    duration: session.duration || booking.duration,
+  };
+};
+
+const getMaterialImage = (material) => {
+  return material.imageUrl || material.image || "";
+};
+
+const getMaterialLink = (material) => {
+  return (
+    material.fileUrl ||
+    material.driveLink ||
+    material.imageUrl ||
+    material.image ||
+    ""
+  );
+};
+
+const StatCard = ({ icon: Icon, label, value, gradient = false }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -6 }}
+      className={
+        gradient
+          ? "rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg p-6"
+          : "rounded-3xl bg-base-100 border border-base-300 text-base-content shadow-lg p-6"
+      }
+    >
+      <Icon
+        className={
+          gradient ? "w-8 h-8 mb-3" : "w-8 h-8 text-indigo-600 mb-3"
+        }
+      />
+
+      <p
+        className={
+          gradient ? "text-sm text-white/70" : "text-sm text-base-content/50"
+        }
+      >
+        {label}
+      </p>
+
+      <h3 className="text-3xl font-bold mt-1">{value}</h3>
+    </motion.div>
+  );
+};
+
+const QuickActionCard = ({ to, icon: Icon, title, text, gradient }) => {
+  return (
+    <RouterLink to={to}>
+      <motion.div
+        whileHover={{ y: -6 }}
+        whileTap={{ scale: 0.98 }}
+        className="h-full bg-base-100 border border-base-300 rounded-3xl shadow-lg hover:shadow-xl p-5 transition-all"
+      >
+        <div
+          className={`w-12 h-12 rounded-2xl ${gradient} text-white flex items-center justify-center mb-4`}
+        >
+          <Icon className="w-6 h-6" />
+        </div>
+
+        <h3 className="font-bold text-lg text-base-content">{title}</h3>
+
+        <p className="text-sm text-base-content/60 mt-1">{text}</p>
+      </motion.div>
+    </RouterLink>
+  );
+};
+
+const EmptyState = ({ title, text }) => {
+  return (
+    <div className="text-center py-14 bg-base-200 border border-base-300 rounded-3xl">
+      <AlertCircle className="w-12 h-12 text-base-content/40 mx-auto mb-3" />
+      <h4 className="font-bold text-lg text-base-content">{title}</h4>
+      <p className="text-base-content/60 mt-1">{text}</p>
+    </div>
+  );
+};
+
+const MaterialPreviewCard = ({ material }) => {
+  const materialImage = getMaterialImage(material);
+  const materialLink = getMaterialLink(material);
+
+  return (
+    <div className="bg-base-100 border border-base-300 rounded-2xl p-4">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-32 h-24 rounded-xl bg-base-300 overflow-hidden flex-shrink-0">
+          {materialImage ? (
+            <img
+              src={materialImage}
+              alt={material.title || "Material"}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = placeholderImage;
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-base-content/40">
+              <ImageIcon className="w-8 h-8" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1">
+          <h4 className="font-bold text-base-content">
+            {material.title || "Untitled Material"}
+          </h4>
+
+          <p className="text-sm text-base-content/60 mt-1 line-clamp-2">
+            {material.description || "No description available."}
+          </p>
+
+          {materialLink ? (
+            <div className="flex flex-wrap gap-2 mt-3">
+              <a
+                href={materialLink}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-xs bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Open
+              </a>
+
+              <a href={materialLink} download className="btn btn-xs btn-outline">
+                <Download className="w-3 h-3" />
+                Download
+              </a>
+            </div>
+          ) : (
+            <p className="text-xs text-base-content/50 mt-3">
+              No material link available
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const BookedSessionCard = ({
+  booking,
+  index,
+  expandedSession,
+  onToggle,
+  materials,
+  isMaterialsLoading,
+}) => {
+  const session = getSessionFromBooking(booking);
+  const sessionId = normalizeId(session._id || booking.sessionId);
+  const isExpanded = expandedSession === sessionId;
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08 }}
+      className="bg-base-100 border border-base-300 rounded-3xl shadow-lg overflow-hidden"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
+        {/* Image */}
+        <div className="h-56 lg:h-full bg-base-300 overflow-hidden">
+          {session.image ? (
+            <img
+              src={session.image}
+              alt={session.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = placeholderImage;
+              }}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-base-content/40">
+              <ImageIcon className="w-12 h-12 mb-2" />
+              <span className="text-sm">No Image</span>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-5 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="badge badge-success badge-outline">
+                  Booked
+                </span>
+
+                {session.duration && (
+                  <span className="badge badge-primary badge-outline">
+                    {session.duration} hrs
+                  </span>
+                )}
+              </div>
+
+              <h3 className="text-2xl font-bold text-base-content">
+                {session.title}
+              </h3>
+
+              <p className="text-sm text-base-content/60 mt-2 line-clamp-2">
+                {session.description}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onToggle(sessionId)}
+              className="btn btn-sm btn-outline w-fit"
+            >
+              Materials
+              <motion.span
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.span>
+            </button>
+          </div>
+
+          {/* Info Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-5">
+            <div className="bg-base-200 border border-base-300 rounded-2xl p-3">
+              <User className="w-4 h-4 text-indigo-600 mb-1" />
+              <p className="text-xs text-base-content/50">Tutor</p>
+              <p className="font-semibold text-sm text-base-content">
+                {session.tutorName || session.tutorEmail || "N/A"}
+              </p>
+            </div>
+
+            <div className="bg-base-200 border border-base-300 rounded-2xl p-3">
+              <DollarSign className="w-4 h-4 text-green-600 mb-1" />
+              <p className="text-xs text-base-content/50">Fee</p>
+              <p className="font-semibold text-sm text-base-content">
+                {formatFee(session)}
+              </p>
+            </div>
+
+            <div className="bg-base-200 border border-base-300 rounded-2xl p-3">
+              <Calendar className="w-4 h-4 text-purple-600 mb-1" />
+              <p className="text-xs text-base-content/50">Registration</p>
+              <p className="font-semibold text-sm text-base-content">
+                {formatDate(session.registrationStart)} →{" "}
+                {formatDate(session.registrationEnd)}
+              </p>
+            </div>
+
+            <div className="bg-base-200 border border-base-300 rounded-2xl p-3">
+              <Clock className="w-4 h-4 text-orange-600 mb-1" />
+              <p className="text-xs text-base-content/50">Class</p>
+              <p className="font-semibold text-sm text-base-content">
+                {formatDate(session.classStart)} → {formatDate(session.classEnd)}
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-wrap gap-2 mt-5">
+            <RouterLink
+              to={`/dashboard/student/bookings/${sessionId}`}
+              className="btn btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0"
+            >
+              <Eye className="w-4 h-4" />
+              View Details
+            </RouterLink>
+
+            <RouterLink
+              to={`/dashboard/student/bookings/${sessionId}/materials`}
+              className="btn btn-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0"
+            >
+              <FolderOpen className="w-4 h-4" />
+              Session Materials
+            </RouterLink>
+
+            <RouterLink to="/dashboard/create-note" className="btn btn-sm btn-outline">
+              <NotebookPen className="w-4 h-4" />
+              Create Note
+            </RouterLink>
+          </div>
+
+          {/* Materials Accordion */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="mt-5 border-t border-base-300 pt-5 overflow-hidden"
+              >
+                <div className="bg-base-200 border border-base-300 rounded-3xl p-5">
+                  <h4 className="font-bold text-base-content flex items-center gap-2 mb-4">
+                    <FolderOpen className="w-5 h-5 text-indigo-600" />
+                    Materials Preview
+                  </h4>
+
+                  {isMaterialsLoading ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                    </div>
+                  ) : materials?.length === 0 ? (
+                    <div className="text-center py-8">
+                      <AlertCircle className="w-9 h-9 text-base-content/40 mx-auto mb-2" />
+                      <p className="text-base-content/60">
+                        No materials available for this session yet.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                      {materials?.slice(0, 4).map((material) => (
+                        <MaterialPreviewCard
+                          key={material._id}
+                          material={material}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.article>
+  );
+};
 
 const StudentDashboardHome = () => {
   const axiosSecure = useAxiosSecure();
   const { user } = UseAuth();
-  const [expandedSession, setExpandedSession] = useState(null); // Track expanded accordion
+
+  const [expandedSession, setExpandedSession] = useState(null);
   const [materialsForSession, setMaterialsForSession] = useState({});
   const [materialsLoading, setMaterialsLoading] = useState({});
 
   // Fetch student stats
-  const { data: stats = {}, isLoading: statsLoading } = useQuery({
+  const {
+    data: stats = {},
+    isLoading: statsLoading,
+    error: statsError,
+  } = useQuery({
     queryKey: ["studentStats", user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/student/stats/${user?.email}`);
@@ -26,7 +426,11 @@ const StudentDashboardHome = () => {
   });
 
   // Fetch booked sessions
-  const { data: bookings = [], isLoading: bookingsLoading } = useQuery({
+  const {
+    data: bookings = [],
+    isLoading: bookingsLoading,
+    error: bookingsError,
+  } = useQuery({
     queryKey: ["studentBookings", user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/bookings/student/${user?.email}`);
@@ -35,281 +439,241 @@ const StudentDashboardHome = () => {
     enabled: !!user?.email,
   });
 
-  // Fetch materials for a session
+  const totalBookings = bookings.length || stats?.totalBookings || 0;
+  const totalReviews = stats?.totalReviews ?? 0;
+  const totalMaterials = stats?.totalMaterials ?? 0;
+
+  const latestBookings = useMemo(() => {
+    return bookings.slice(0, 4);
+  }, [bookings]);
+
   const fetchMaterials = async (sessionId) => {
     if (!sessionId) return;
-    setMaterialsLoading((prev) => ({ ...prev, [sessionId]: true }));
+
+    setMaterialsLoading((prev) => ({
+      ...prev,
+      [sessionId]: true,
+    }));
+
     try {
       const res = await axiosSecure.get(`/materials/session/${sessionId}`);
-      setMaterialsForSession((prev) => ({ ...prev, [sessionId]: res.data || [] }));
+
+      setMaterialsForSession((prev) => ({
+        ...prev,
+        [sessionId]: res.data || [],
+      }));
     } catch (err) {
       Swal.fire({
         icon: "error",
         title: "Error!",
         text: err.response?.data?.message || err.message,
-        customClass: { confirmButton: "btn btn-error bg-gradient-to-r from-red-500 to-rose-600 text-white" },
+        customClass: {
+          confirmButton:
+            "btn btn-error bg-gradient-to-r from-red-500 to-rose-600 text-white",
+        },
+        buttonsStyling: false,
       });
-      setMaterialsForSession((prev) => ({ ...prev, [sessionId]: [] }));
+
+      setMaterialsForSession((prev) => ({
+        ...prev,
+        [sessionId]: [],
+      }));
     } finally {
-      setMaterialsLoading((prev) => ({ ...prev, [sessionId]: false }));
+      setMaterialsLoading((prev) => ({
+        ...prev,
+        [sessionId]: false,
+      }));
     }
   };
 
-  // Toggle accordion
   const toggleAccordion = (sessionId) => {
     if (expandedSession === sessionId) {
       setExpandedSession(null);
-    } else {
-      setExpandedSession(sessionId);
-      if (!materialsForSession[sessionId]) {
-        fetchMaterials(sessionId);
-      }
+      return;
+    }
+
+    setExpandedSession(sessionId);
+
+    if (!materialsForSession[sessionId]) {
+      fetchMaterials(sessionId);
     }
   };
 
-  // Format date with fallback
-  const formatDate = (date) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // Loading state
   if (statsLoading || bookingsLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <div className="flex justify-center items-center min-h-screen bg-base-200 text-base-content">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         >
-          <Loader2 className="w-16 h-16 text-indigo-600" />
+          <Loader2 className="w-16 h-16 text-primary" />
         </motion.div>
       </div>
     );
   }
 
+  if (statsError || bookingsError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-base-200 text-base-content px-4">
+        <div className="bg-base-100 border border-base-300 rounded-3xl shadow-xl p-8 text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-error mx-auto mb-3" />
+          <h2 className="text-xl font-bold">Failed to load dashboard</h2>
+          <p className="text-base-content/60 mt-2">
+            Please refresh the page and try again.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto space-y-12">
-        {/* === HEADER === */}
+    <div className="min-h-screen bg-base-200 text-base-content py-8 px-4 transition-colors duration-300">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Hero Header */}
         <motion.header
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-          className="relative"
+          transition={{ duration: 0.7, type: "spring", stiffness: 100 }}
+          className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-3xl shadow-xl p-6 md:p-10"
         >
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 blur-3xl opacity-20 rounded-2xl"></div>
-          </div>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="absolute -right-16 -top-16 w-56 h-56 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute -left-16 -bottom-16 w-56 h-56 bg-white/10 rounded-full blur-2xl"></div>
+
+          <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+              <div className="inline-flex items-center gap-2 bg-white/15 border border-white/20 backdrop-blur-md rounded-full px-4 py-2 text-sm mb-4">
+                <CheckCircle className="w-4 h-4 text-green-300" />
+                Student Dashboard
+              </div>
+
+              <h1 className="text-3xl md:text-5xl font-extrabold">
                 Welcome, {user?.displayName || "Student"}
               </h1>
-              <p className="text-lg text-gray-600 mt-2">Explore your bookings and study materials</p>
+
+              <p className="text-white/80 mt-3 text-lg max-w-2xl">
+                Manage your booked sessions, access materials, create notes, and
+                track your learning progress.
+              </p>
             </div>
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => window.scrollTo({ top: 9999, behavior: "smooth" })}
-                className="btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-2"
+
+            <div className="flex flex-wrap gap-3">
+              <RouterLink
+                to="/dashboard/create-note"
+                className="btn bg-white text-indigo-700 hover:bg-white/90 border-0"
               >
-                <FileText className="w-4 h-4" /> Create Note
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => document.getElementById("my-notes-section")?.scrollIntoView({ behavior: "smooth" })}
-                className="btn bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-2"
+                <NotebookPen className="w-4 h-4" />
+                Create Note
+              </RouterLink>
+
+              <RouterLink
+                to="/dashboard/my-notes"
+                className="btn btn-outline text-white border-white hover:bg-white hover:text-indigo-700"
               >
-                <Book className="w-4 h-4" /> My Notes
-              </motion.button>
+                <BookOpen className="w-4 h-4" />
+                My Notes
+              </RouterLink>
             </div>
           </div>
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: "120px" }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mt-4 rounded-full"
-          />
         </motion.header>
 
-        {/* === STATS === */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {[
-            { icon: Book, label: "Bookings", value: stats?.totalBookings ?? 0 },
-            { icon: Star, label: "Reviews Given", value: stats?.totalReviews ?? 0 },
-            { icon: FileText, label: "Materials Available", value: stats?.totalMaterials ?? 0 },
-          ].map((stat, idx) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.2 }}
-              whileHover={{ scale: 1.05 }}
-              className="bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-lg p-6 border border-indigo-100 text-center"
-            >
-              <div className="flex justify-center mb-2">
-                <stat.icon className="w-8 h-8 text-indigo-600" />
-              </div>
-              <div className="text-sm text-gray-600">{stat.label}</div>
-              <div className="text-2xl font-bold text-indigo-700">{stat.value}</div>
-            </motion.div>
-          ))}
+        {/* Stats */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <StatCard icon={BookOpen} label="Bookings" value={totalBookings} />
+
+          <StatCard icon={Star} label="Reviews Given" value={totalReviews} />
+
+          <StatCard
+            icon={FileText}
+            label="Materials Available"
+            value={totalMaterials}
+            gradient
+          />
         </section>
 
-        {/* === BOOKED SESSIONS WITH MATERIALS === */}
-        <section className="relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-lg p-6 border border-indigo-100"
-          >
-            <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Book className="w-6 h-6 text-indigo-600" /> Your Booked Sessions
-            </h2>
-            {bookings.length === 0 ? (
-              <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500">You have no bookings yet.</p>
-              </div>
-            ) : (
-              <div className="relative space-y-6">
-                {/* Timeline Line */}
-                <div className="absolute left-4 md:left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500"></div>
-                {bookings.map((b, idx) => {
-                  const session = b.session || b.sessionData || (b.sessionId ? { _id: b.sessionId, title: b.title } : null);
-                  const sessionId = session?._id?.toString?.() ?? b.sessionId;
-                  return (
-                    <motion.div
-                      key={b._id}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="relative pl-12"
-                    >
-                      {/* Timeline Dot */}
-                      <div className="absolute left-2 md:left-4 top-4 w-4 h-4 bg-indigo-600 rounded-full border-2 border-white"></div>
-                      <div className="bg-white rounded-lg shadow-md p-4 border border-indigo-100">
-                        {/* Session Header */}
-                        <div
-                          className="flex items-center justify-between cursor-pointer"
-                          onClick={() => toggleAccordion(sessionId)}
-                        >
-                          <div className="font-semibold text-gray-800">{session?.title || "Unknown Session"}</div>
-                          <motion.div
-                            animate={{ rotate: expandedSession === sessionId ? 180 : 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </motion.div>
-                        </div>
-                        {/* Session Details */}
-                        <div className="text-sm text-gray-600 mt-2">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4" /> Tutor: {session?.tutorName || b.tutorEmail || "N/A"}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4" /> Fee: {session?.registrationFee === 0 ? "Free" : `$${session?.registrationFee}` || "N/A"}
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <FileText className="w-4 h-4" /> Reg: {formatDate(session?.registrationStart)} → {formatDate(session?.registrationEnd)}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 mt-3">
-                          <Link to={`/dashboard/student/bookings/${session?._id}`}>
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="btn btn-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg flex items-center gap-1"
-                            >
-                              <FileText className="w-4 h-4" /> View Details
-                            </motion.button>
-                          </Link>
-                        </div>
-                        {/* Materials Accordion */}
-                        <AnimatePresence>
-                          {expandedSession === sessionId && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="mt-4 space-y-4"
-                            >
-                              {materialsLoading[sessionId] ? (
-                                <div className="flex justify-center py-4">
-                                  <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-                                </div>
-                              ) : materialsForSession[sessionId]?.length === 0 ? (
-                                <div className="text-center py-4">
-                                  <AlertCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                  <p className="text-gray-500">No materials available for this session.</p>
-                                </div>
-                              ) : (
-                                materialsForSession[sessionId]?.map((m) => (
-                                  <motion.div
-                                    key={m._id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="bg-gradient-to-br from-white to-indigo-50 rounded-lg p-4 border border-indigo-100"
-                                  >
-                                    <div className="font-semibold text-gray-800">{m.title || "Untitled"}</div>
-                                    <div className="text-sm text-gray-600 mb-2">{m.description || "No description"}</div>
-                                    {m.image && (
-                                      <div className="mb-2">
-                                        <img src={m.image} alt={m.title || "Untitled"} className="w-full h-32 rounded-md object-cover" />
-                                        <a
-                                          href={m.image}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          download
-                                          className="btn btn-sm btn-outline mt-2 flex items-center gap-1"
-                                        >
-                                          <Download className="w-4 h-4" /> Download Image
-                                        </a>
-                                      </div>
-                                    )}
-                                    {m.fileUrl && (
-                                      <div className="flex gap-2">
-                                        <a
-                                          href={m.fileUrl}
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="btn btn-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg flex items-center gap-1"
-                                        >
-                                          <Link className="w-4 h-4" /> Open File
-                                        </a>
-                                        <a
-                                          href={m.fileUrl}
-                                          download
-                                          className="btn btn-sm btn-outline flex items-center gap-1"
-                                        >
-                                          <Download className="w-4 h-4" /> Download
-                                        </a>
-                                      </div>
-                                    )}
-                                  </motion.div>
-                                ))
-                              )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </motion.div>
+        {/* Quick Actions */}
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-5">
+          <QuickActionCard
+            to="/dashboard/my-bookings"
+            icon={BookOpen}
+            title="My Bookings"
+            text="View all booked study sessions."
+            gradient="bg-gradient-to-br from-blue-500 to-indigo-600"
+          />
+
+          <QuickActionCard
+            to="/dashboard/my-materials"
+            icon={FolderOpen}
+            title="Study Materials"
+            text="Access available learning resources."
+            gradient="bg-gradient-to-br from-indigo-500 to-purple-600"
+          />
+
+          <QuickActionCard
+            to="/dashboard/create-note"
+            icon={NotebookPen}
+            title="Create Notes"
+            text="Write notes for booked sessions."
+            gradient="bg-gradient-to-br from-purple-500 to-pink-600"
+          />
+
+          <QuickActionCard
+            to="/dashboard/my-notes"
+            icon={Layers}
+            title="My Notes"
+            text="Edit and organize saved notes."
+            gradient="bg-gradient-to-br from-green-500 to-emerald-600"
+          />
         </section>
+
+        {/* Booked Sessions */}
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-base-100 border border-base-300 rounded-3xl shadow-xl p-6 md:p-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-base-content flex items-center gap-2">
+                <BookOpen className="w-6 h-6 text-indigo-600" />
+                Recent Booked Sessions
+              </h2>
+
+              <p className="text-base-content/60 mt-1">
+                Preview your latest booked sessions and their materials.
+              </p>
+            </div>
+
+            <RouterLink to="/dashboard/my-bookings" className="btn btn-sm btn-outline w-fit">
+              View All Bookings
+            </RouterLink>
+          </div>
+
+          {latestBookings.length === 0 ? (
+            <EmptyState
+              title="No bookings yet"
+              text="After you book a session, it will appear here."
+            />
+          ) : (
+            <div className="space-y-6">
+              {latestBookings.map((booking, index) => {
+                const session = getSessionFromBooking(booking);
+                const sessionId = normalizeId(session._id || booking.sessionId);
+
+                return (
+                  <BookedSessionCard
+                    key={booking._id || `booking-${index}`}
+                    booking={booking}
+                    index={index}
+                    expandedSession={expandedSession}
+                    onToggle={toggleAccordion}
+                    materials={materialsForSession[sessionId] || []}
+                    isMaterialsLoading={materialsLoading[sessionId]}
+                  />
+                );
+              })}
+            </div>
+          )}
+        </motion.section>
       </div>
     </div>
   );
